@@ -5,6 +5,7 @@ benchmarks/.idea/
 .vscode/
 local.properties
 *~
+**/.venv/
 
 benchmarks/dacapo-evaluation-git-*
 
