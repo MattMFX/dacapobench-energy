@@ -5,10 +5,10 @@
 benchmark: avrora
 valid: true
 warmup: false
-elapsed-time-ms: 9500
+elapsed-time-ms: 8669
 sockets: 1
 energy-joules:
   socket-0:
-    dram: 6.470092999996268
-    cpu: 71.97039800000493
-    package: 88.68835499999841
+    dram: 5.702880999990157
+    cpu: 56.60577399999602
+    package: 72.39544599999499
