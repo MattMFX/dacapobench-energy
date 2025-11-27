@@ -4,11 +4,11 @@
 #
 benchmark: h2o
 valid: true
-warmup: false
-elapsed-time-ms: 12787
+warmup: true
+elapsed-time-ms: 11867
 sockets: 1
 energy-joules:
   socket-0:
-    dram: 13.94006300000001
-    cpu: 58.7881469999993
-    package: 82.46087699999771
+    dram: 13.03930599999967
+    cpu: 54.791504000000714
+    package: 76.98132400000031

@@ -47,6 +47,9 @@ public class EnergyCallback extends Callback {
   /** System property that controls where the CSV data is appended. */
   private static final String CSV_FILENAME_PROPERTY = "dacapo.energy.csv";
 
+  /** Optional system property describing the heap size used for the run. */
+  private static final String HEAP_SIZE_PROPERTY = "dacapo.heap.size";
+
   /**
    * Used only to distinguish warmup iterations from the timing iteration
    * in the output filename (".0" for warmup, no suffix for timing), in
@@ -204,11 +207,13 @@ public class EnergyCallback extends Callback {
       csv = new PrintStream(new java.io.FileOutputStream(csvFile, true));
 
       if (newFile) {
-        csv.println("benchmark,valid,warmup,elapsed_ms,socket,dram_j,cpu_j,package_j");
+        csv.println("benchmark,valid,warmup,elapsed_ms,socket,heap_size,dram_j,cpu_j,package_j");
       }
 
-      csv.printf("%s,%b,%b,%d,%d,%.9f,%.9f,%.9f%n",
-                 benchmark, valid, warmup, elapsedMs, socketId,
+      String heapSize = resolveHeapSize();
+
+      csv.printf("%s,%b,%b,%d,%d,%s,%.9f,%.9f,%.9f%n",
+                 benchmark, valid, warmup, elapsedMs, socketId, heapSize,
                  dramJ, cpuJ, pkgJ);
     } catch (Exception e) {
       System.err.println("EnergyCallback: could not append to CSV '" + csvFileName + "': " + e);
@@ -219,6 +224,36 @@ public class EnergyCallback extends Callback {
         } catch (Exception ignore) {
         }
       }
+    }
+  }
+
+  /**
+   * Determine a human-readable heap size string for CSV output.
+   * Prefer the explicit heap size passed via -Ddacapo.heap.size; if
+   * absent, infer it from Runtime.getRuntime().maxMemory().
+   */
+  private String resolveHeapSize() {
+    String fromProperty = System.getProperty(HEAP_SIZE_PROPERTY);
+    if (fromProperty != null && !fromProperty.isEmpty()) {
+      return fromProperty;
+    }
+
+    long maxBytes = Runtime.getRuntime().maxMemory();
+    if (maxBytes <= 0) {
+      return "unknown";
+    }
+
+    // Convert to MiB/GiB-style units for readability.
+    long mibs = maxBytes / (1024L * 1024L);
+    if (mibs == 0) {
+      return maxBytes + "b";
+    }
+
+    if (mibs % 1024L == 0) {
+      long gibs = mibs / 1024L;
+      return gibs + "g";
+    } else {
+      return mibs + "m";
     }
   }
 
