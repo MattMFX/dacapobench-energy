@@ -4,14 +4,16 @@
 
 # Simple wrapper to run DaCapo with EnergyCallback and jRAPL energy measurement.
 # Usage:
-#   ./run_energy.sh -b <benchmark> -r <runs> [-s heap_size] [-F cpu_freq_khz] [-j java_bin]
+#   ./run_energy.sh -b <benchmark> -r <runs> [-s heap_size] [-F cpu_freq_mhz] [-g gc] [-j java_bin]
 #
 #   -b <benchmark>    : DaCapo benchmark name (e.g., lusearch, batik, eclipse, ...)
 #   -r <runs>         : number of times to repeat the benchmark
 #   -s <heap_size>    : optional JVM heap size (e.g., 512m, 2g). If provided, the JVM
 #                       will run with -Xms[heap_size] -Xmx[heap_size].
-#   -F <cpu_freq_khz> : optional CPU frequency in kHz (must match one of the
-#                       available frequencies reported by the CPU, e.g. 2400000).
+#   -F <cpu_freq_mhz> : optional CPU frequency in MHz (must match one of the
+#                       available discrete frequencies reported by the CPU).
+#   -g <gc>           : optional garbage collector ('serial', 'parallel', 'g1',
+#                       'zgc', or 'shenandoah', depending on JVM support).
 #   -j <java_bin>     : optional path or command name for the Java binary to use
 #                       (e.g., /usr/lib/jvm/java-17/bin/java). Defaults to 'java'.
 #   -h                : show this help message and exit.
@@ -24,13 +26,14 @@ RED="\033[0;31m"
 NC="\033[0m"
 
 usage() {
-  echo "Usage: $0 -b <benchmark> -r <runs> [-s heap_size] [-F cpu_freq_khz] [-j java_bin]"
+  echo "Usage: $0 -b <benchmark> -r <runs> [-s heap_size] [-F cpu_freq_mhz] [-g gc] [-j java_bin]"
   echo
   echo "  -b <benchmark>    DaCapo benchmark name (e.g., lusearch, batik, eclipse, ...)"
   echo "  -r <runs>         Number of times to repeat the benchmark"
   echo "  -s <heap_size>    Optional JVM heap size (e.g., 512m, 2g)."
-  echo "  -F <cpu_freq_khz> Optional CPU frequency in kHz (must be one of the available"
-  echo "                    frequencies reported by the CPU, e.g., 2400000)."
+  echo "  -F <cpu_freq_mhz> Optional CPU frequency in MHz (must equal one of the discrete"
+  echo "                    frequencies supported by the CPU, e.g., 2400)."
+  echo "  -g <gc>           Optional garbage collector: serial, parallel, g1, zgc, shenandoah."
   echo "  -j <java_bin>     Optional Java binary to use (path or command name)."
   echo "  -h                Show this help message and exit."
 }
@@ -38,15 +41,17 @@ usage() {
 BENCHMARK=""
 RUNS=""
 HEAP_SIZE=""
-CPU_FREQ_KHZ=""
+CPU_FREQ_MHZ=""
 JAVA_BIN_ARG=""
+GC_CHOICE=""
 
-while getopts ":b:r:s:F:j:h" opt; do
+while getopts ":b:r:s:F:g:j:h" opt; do
   case "$opt" in
     b) BENCHMARK="$OPTARG" ;;
     r) RUNS="$OPTARG" ;;
     s) HEAP_SIZE="$OPTARG" ;;
-    F) CPU_FREQ_KHZ="$OPTARG" ;;
+    F) CPU_FREQ_MHZ="$OPTARG" ;;
+    g) GC_CHOICE="$OPTARG" ;;
     j) JAVA_BIN_ARG="$OPTARG" ;;
     h)
       usage
@@ -108,11 +113,43 @@ if [ -n "$HEAP_SIZE" ]; then
   fi
 fi
 
+# Configure garbage collector (optional)
+GC_OPTS=""
+GC_PROP=""
+if [ -n "$GC_CHOICE" ]; then
+  case "$GC_CHOICE" in
+    serial)
+      GC_OPTS="-XX:+UseSerialGC"
+      ;;
+    parallel|throughput)
+      GC_OPTS="-XX:+UseParallelGC"
+      ;;
+    g1)
+      GC_OPTS="-XX:+UseG1GC"
+      ;;
+    zgc)
+      GC_OPTS="-XX:+UseZGC"
+      ;;
+    shenandoah)
+      GC_OPTS="-XX:+UseShenandoahGC"
+      ;;
+    *)
+      echo -e "${RED}Error: Unsupported GC '$GC_CHOICE'.${NC}"
+      echo -e "${YELLOW}Supported values: serial, parallel, g1, zgc, shenandoah.${NC}"
+      exit 1
+      ;;
+  esac
+
+  GC_PROP="-Ddacapo.gc.name=${GC_CHOICE}"
+  echo -e "${BLUE}Using garbage collector: ${GC_CHOICE}${NC}"
+fi
+
 # State for restoring CPU frequency settings
 OLD_GOVERNOR=""
 OLD_MIN_FREQ=""
 OLD_MAX_FREQ=""
 CPU_FREQ_CONFIGURED="false"
+CPU_FREQ_PROP=""
 
 list_available_frequencies() {
   local freq_file="/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies"
@@ -128,15 +165,19 @@ list_available_frequencies() {
 }
 
 configure_cpu_frequency() {
-  if [ -z "$CPU_FREQ_KHZ" ]; then
+  if [ -z "$CPU_FREQ_MHZ" ]; then
     # No explicit frequency requested
     return
   fi
 
-  if ! [[ "$CPU_FREQ_KHZ" =~ ^[0-9]+$ ]]; then
-    echo -e "${RED}Error: CPU frequency '$CPU_FREQ_KHZ' must be an integer in kHz.${NC}"
+  if ! [[ "$CPU_FREQ_MHZ" =~ ^[0-9]+$ ]]; then
+    echo -e "${RED}Error: CPU frequency '$CPU_FREQ_MHZ' must be an integer in MHz.${NC}"
     exit 1
   fi
+
+  # Convert MHz → kHz for comparison with kernel-reported frequencies and cpupower.
+  local CPU_FREQ_KHZ
+  CPU_FREQ_KHZ=$((CPU_FREQ_MHZ * 1000))
 
   local available
   available=$(list_available_frequencies)
@@ -176,28 +217,16 @@ configure_cpu_frequency() {
     OLD_MAX_FREQ=$(cat "$max_file")
   fi
 
-  echo -e "${BLUE}Setting CPU frequency to ${CPU_FREQ_KHZ} kHz on all cores...${NC}"
+  echo -e "${BLUE}Setting CPU frequency to ${CPU_FREQ_MHZ} MHz (${CPU_FREQ_KHZ} kHz) on all supported cores using cpupower...${NC}"
 
-  for cpu_dir in /sys/devices/system/cpu/cpu[0-9]*; do
-    [ -d "$cpu_dir" ] || continue
-
-    local cgov="$cpu_dir/cpufreq/scaling_governor"
-    local cmin="$cpu_dir/cpufreq/scaling_min_freq"
-    local cmax="$cpu_dir/cpufreq/scaling_max_freq"
-
-    if [ -w "$cgov" ]; then
-      echo "userspace" | sudo tee "$cgov" > /dev/null 2>&1
-    fi
-    if [ -w "$cmin" ]; then
-      echo "$CPU_FREQ_KHZ" | sudo tee "$cmin" > /dev/null 2>&1
-    fi
-    if [ -w "$cmax" ]; then
-      echo "$CPU_FREQ_KHZ" | sudo tee "$cmax" > /dev/null 2>&1
-    fi
-  done
+  # Use cpupower to set governor and frequency for all CPUs.
+  # Requires cpupower to be installed and run with sufficient privileges.
+  sudo cpupower frequency-set -g userspace > /dev/null 2>&1
+  sudo cpupower frequency-set -f "${CPU_FREQ_KHZ}" > /dev/null 2>&1
 
   CPU_FREQ_CONFIGURED="true"
-  echo -e "${GREEN}CPU frequency set to ${CPU_FREQ_KHZ} kHz.${NC}"
+  CPU_FREQ_PROP="-Ddacapo.cpu.freq_mhz=${CPU_FREQ_MHZ}"
+  echo -e "${GREEN}CPU frequency set to ${CPU_FREQ_MHZ} MHz.${NC}"
 }
 
 restore_cpu_frequency() {
@@ -293,7 +322,7 @@ COUNTER=1
 while [ "$COUNTER" -le "$RUNS" ]; do
   echo "=== Run $COUNTER of $RUNS for benchmark '$BENCHMARK' (CPU core 0 only) ==="
 
-  sudo taskset -c 0 "$JAVA_BIN" $JVM_HEAP_OPTS $HEAP_PROP \
+  sudo taskset -c 0 "$JAVA_BIN" $JVM_HEAP_OPTS $GC_OPTS $HEAP_PROP $GC_PROP $CPU_FREQ_PROP \
     -Djava.library.path=. \
     -Ddacapo.energy.yml=energy.yml \
     -Ddacapo.energy.csv=energy.csv \

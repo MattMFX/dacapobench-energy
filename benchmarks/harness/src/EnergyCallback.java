@@ -50,6 +50,12 @@ public class EnergyCallback extends Callback {
   /** Optional system property describing the heap size used for the run. */
   private static final String HEAP_SIZE_PROPERTY = "dacapo.heap.size";
 
+  /** Optional system property describing the GC used for the run. */
+  private static final String GC_NAME_PROPERTY = "dacapo.gc.name";
+
+  /** Optional system property describing the CPU frequency (in MHz) used for the run. */
+  private static final String CPU_FREQ_PROPERTY = "dacapo.cpu.freq_mhz";
+
   /**
    * Used only to distinguish warmup iterations from the timing iteration
    * in the output filename (".0" for warmup, no suffix for timing), in
@@ -207,13 +213,16 @@ public class EnergyCallback extends Callback {
       csv = new PrintStream(new java.io.FileOutputStream(csvFile, true));
 
       if (newFile) {
-        csv.println("benchmark,valid,warmup,elapsed_ms,socket,heap_size,dram_j,cpu_j,package_j");
+        csv.println("benchmark,valid,warmup,elapsed_ms,socket,heap_size,gc,cpu_freq_mhz,dram_j,cpu_j,package_j");
       }
 
       String heapSize = resolveHeapSize();
+      String gcName = resolveGcName();
+      String cpuFreq = resolveCpuFreq();
 
-      csv.printf("%s,%b,%b,%d,%d,%s,%.9f,%.9f,%.9f%n",
-                 benchmark, valid, warmup, elapsedMs, socketId, heapSize,
+      csv.printf("%s,%b,%b,%d,%d,%s,%s,%s,%.9f,%.9f,%.9f%n",
+                 benchmark, valid, warmup, elapsedMs, socketId,
+                 heapSize, gcName, cpuFreq,
                  dramJ, cpuJ, pkgJ);
     } catch (Exception e) {
       System.err.println("EnergyCallback: could not append to CSV '" + csvFileName + "': " + e);
@@ -255,6 +264,32 @@ public class EnergyCallback extends Callback {
     } else {
       return mibs + "m";
     }
+  }
+
+  /**
+   * Determine the garbage collector name for CSV output.
+   * Prefer the explicit name passed via -Ddacapo.gc.name; otherwise
+   * fall back to "default".
+   */
+  private String resolveGcName() {
+    String fromProperty = System.getProperty(GC_NAME_PROPERTY);
+    if (fromProperty != null && !fromProperty.isEmpty()) {
+      return fromProperty;
+    }
+    return "default";
+  }
+
+  /**
+   * Determine the CPU frequency (in MHz) for CSV output.
+   * Prefer the explicit value passed via -Ddacapo.cpu.freq_mhz; otherwise
+   * fall back to "unknown".
+   */
+  private String resolveCpuFreq() {
+    String fromProperty = System.getProperty(CPU_FREQ_PROPERTY);
+    if (fromProperty != null && !fromProperty.isEmpty()) {
+      return fromProperty;
+    }
+    return "unknown";
   }
 
   /**
