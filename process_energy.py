@@ -41,8 +41,8 @@ def main():
     # EDP = Package Joules * Time
     df['edp'] = df['package_j'] * df['time_s']
     
-    # EDP2 = Package Joules * Time^2
-    df['edp2'] = df['package_j'] * (df['time_s'] ** 2)
+    # EDP2 = Package Joules^2 * Time (Giving energy greater weight)
+    df['edp2'] = (df['package_j'] ** 2) * df['time_s']
 
     # Columns to analyze
     metrics = {
@@ -55,7 +55,7 @@ def main():
     }
 
     # Grouping columns
-    group_cols = ['benchmark', 'heap_size', 'cpu_freq_khz']
+    group_cols = ['benchmark', 'heap_size', 'cpu_freq_mhz']
     
     # Result storage
     results = []
@@ -64,12 +64,12 @@ def main():
     grouped = df.groupby(group_cols)
 
     for name, group in grouped:
-        benchmark, heap_size, cpu_freq_khz = name
+        benchmark, heap_size, cpu_freq_mhz = name
         
         row = {
             'Benchmark': benchmark,
             'Heap Size': heap_size,
-            'CPU Frequency (kHz)': cpu_freq_khz
+            'CPU Frequency (MHz)': cpu_freq_mhz
         }
         
         for metric_col, metric_name in metrics.items():
@@ -104,11 +104,11 @@ def main():
     result_df = pd.DataFrame(results)
     
     # Sort
-    result_df = result_df.sort_values(by=['Benchmark', 'Heap Size', 'CPU Frequency (kHz)'])
+    result_df = result_df.sort_values(by=['Benchmark', 'Heap Size', 'CPU Frequency (MHz)'])
     
     # Select and Reorder columns to match requirements
     columns_order = [
-        'Benchmark', 'Heap Size', 'CPU Frequency (kHz)',
+        'Benchmark', 'Heap Size', 'CPU Frequency (MHz)',
         'Time Elapsed Mean (ms)', 
         'DRAM Joules Mean', 
         'CPU Joules Mean', 

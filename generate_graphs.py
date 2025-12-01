@@ -64,9 +64,9 @@ def main():
         )
         
         # Convert Frequency to MHz
-        # Note: Assuming current data is in kHz as per CSV header
-        bench_df['Frequency (MHz)'] = bench_df['CPU Frequency (kHz)'] / 1000.0
-
+        # The column is already in MHz now
+        bench_df['Frequency (MHz)'] = bench_df['CPU Frequency (MHz)'] 
+        
         # Sort for consistent plotting
         bench_df = bench_df.sort_values(by=['Frequency (MHz)', 'Heap Size MB'])
 
@@ -75,16 +75,44 @@ def main():
             {
                 'y_col': 'EDP Mean',
                 'y_label': 'EDP (J⋅s)',
+                'ci_low': 'EDP CI 95% Low',
+                'ci_high': 'EDP CI 95% High',
                 'title': f'{benchmark} - EDP vs Frequency',
                 'filename': f'{benchmark}_edp.png'
             },
             {
                 'y_col': 'EDP2 Mean',
-                'y_label': 'EDP² (J⋅s²)',
-                'title': f'{benchmark} - EDP² vs Frequency',
+                'y_label': 'E²DP (J²⋅s)',
+                'ci_low': 'EDP2 CI 95% Low',
+                'ci_high': 'EDP2 CI 95% High',
+                'title': f'{benchmark} - E²DP vs Frequency',
                 'filename': f'{benchmark}_edp2.png'
+            },
+            {
+                'y_col': 'Package Joules Mean',
+                'y_label': 'Energy (Joules)',
+                'ci_low': 'Package Joules CI 95% Low',
+                'ci_high': 'Package Joules CI 95% High',
+                'title': f'{benchmark} - Energy vs Frequency',
+                'filename': f'{benchmark}_energy.png'
+            },
+            {
+                'y_col': 'Time Elapsed Mean (ms)',
+                'y_label': 'Time (ms)',
+                'ci_low': 'Elapsed Time CI 95% Low',
+                'ci_high': 'Elapsed Time CI 95% High',
+                'title': f'{benchmark} - Time vs Frequency',
+                'filename': f'{benchmark}_time.png'
             }
         ]
+
+        # Get sorted heap labels for consistent coloring
+        heap_info = bench_df[['Heap Label', 'Heap Size MB']].drop_duplicates().sort_values('Heap Size MB')
+        heap_order = heap_info['Heap Label'].tolist()
+        
+        # Create palette
+        palette = sns.color_palette("tab10", len(heap_order))
+        label_to_color = dict(zip(heap_order, palette))
 
         for config in plot_configs:
             plt.figure(figsize=(10, 6))
@@ -96,9 +124,24 @@ def main():
                 x='Frequency (MHz)',
                 y=config['y_col'],
                 hue='Heap Label',
+                hue_order=heap_order,
+                palette=label_to_color,
                 marker='o',
-                style='Heap Label'
+                style='Heap Label',
+                style_order=heap_order
             )
+            
+            # Add Confidence Intervals
+            for label in heap_order:
+                subset = bench_df[bench_df['Heap Label'] == label].sort_values('Frequency (MHz)')
+                if not subset.empty:
+                    plt.fill_between(
+                        subset['Frequency (MHz)'],
+                        subset[config['ci_low']],
+                        subset[config['ci_high']],
+                        color=label_to_color[label],
+                        alpha=0.15  # Tuned opacity (was 0.2)
+                    )
             
             plt.title(config['title'])
             plt.xlabel('Frequency (MHz)')
@@ -116,4 +159,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
