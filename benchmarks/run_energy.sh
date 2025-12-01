@@ -151,6 +151,12 @@ OLD_MAX_FREQ=""
 CPU_FREQ_CONFIGURED="false"
 CPU_FREQ_PROP=""
 
+# State for restoring Intel Turbo Boost
+TURBO_PATH_INTEL="/sys/devices/system/cpu/intel_pstate/no_turbo"
+TURBO_PATH_GENERIC="/sys/devices/system/cpu/cpufreq/boost"
+OLD_TURBO_VALUE=""
+TURBO_CONFIGURED="false"
+
 list_available_frequencies() {
   local freq_file="/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies"
 
@@ -272,6 +278,67 @@ disable_hyperthreading() {
   fi
 }
 
+disable_turboboost() {
+  echo -e "${BLUE}Disabling Intel Turbo Boost...${NC}"
+
+  local path=""
+  if [ -e "$TURBO_PATH_INTEL" ]; then
+    path="$TURBO_PATH_INTEL"
+  elif [ -e "$TURBO_PATH_GENERIC" ]; then
+    path="$TURBO_PATH_GENERIC"
+  fi
+
+  if [ -z "$path" ]; then
+    echo -e "${YELLOW}Turbo Boost control not available on this system.${NC}"
+    return
+  fi
+
+  if [ -r "$path" ]; then
+    OLD_TURBO_VALUE=$(cat "$path")
+  fi
+
+  # Intel semantics: no_turbo=1 disables turbo; generic boost=0 disables turbo.
+  local disable_value="1"
+  if [ "$path" = "$TURBO_PATH_GENERIC" ]; then
+    disable_value="0"
+  fi
+
+  echo "$disable_value" | sudo tee "$path" > /dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    TURBO_CONFIGURED="true"
+    echo -e "${GREEN}Intel Turbo Boost disabled.${NC}"
+  else
+    echo -e "${YELLOW}Failed to disable Intel Turbo Boost.${NC}"
+  fi
+}
+
+enable_turboboost() {
+  if [ "$TURBO_CONFIGURED" != "true" ]; then
+    return
+  fi
+
+  echo -e "${BLUE}Restoring Intel Turbo Boost setting...${NC}"
+
+  local path=""
+  if [ -e "$TURBO_PATH_INTEL" ]; then
+    path="$TURBO_PATH_INTEL"
+  elif [ -e "$TURBO_PATH_GENERIC" ]; then
+    path="$TURBO_PATH_GENERIC"
+  fi
+
+  if [ -z "$path" ] || [ -z "$OLD_TURBO_VALUE" ]; then
+    echo -e "${YELLOW}Previous Turbo Boost state unknown; skipping restore.${NC}"
+    return
+  fi
+
+  echo "$OLD_TURBO_VALUE" | sudo tee "$path" > /dev/null 2>&1
+  if [ $? -eq 0 ]; then
+    echo -e "${GREEN}Intel Turbo Boost state restored.${NC}"
+  else
+    echo -e "${YELLOW}Failed to restore Intel Turbo Boost state.${NC}"
+  fi
+}
+
 enable_hyperthreading() {
   echo -e "${BLUE}Enabling hyperthreading...${NC}"
 
@@ -288,10 +355,11 @@ enable_hyperthreading() {
 }
 
 cleanup() {
-  # Restore CPU frequency configuration (if we changed it) and
-  # re-enable hyperthreading before exiting.
+  # Restore CPU frequency configuration (if we changed it),
+  # re-enable hyperthreading, and restore Turbo Boost before exiting.
   restore_cpu_frequency
   enable_hyperthreading
+  enable_turboboost
 }
 
 # Ensure we always restore CPU and hyperthreading settings, even if the script is interrupted
@@ -314,8 +382,9 @@ echo -e "${BLUE}Compiling helper classes with: ${JAVAC_BIN}${NC}"
   harness/src/EnergyCallback.java \
   libs/jRAPL-master/EnergyCheckUtils.java
 
-# Disable hyperthreading and, if requested, configure CPU frequency
+# Disable hyperthreading and Turbo Boost and, if requested, configure CPU frequency
 disable_hyperthreading
+disable_turboboost
 configure_cpu_frequency
 
 COUNTER=1

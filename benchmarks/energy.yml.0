@@ -2,13 +2,13 @@
 # Example:
 #   sudo java -Ddacapo.energy.yml=<output_file> -jar <dacapo_version>.jar -callback EnergyCallback <benchmark>
 #
-benchmark: biojava
+benchmark: lusearch
 valid: true
 warmup: true
-elapsed-time-ms: 11869
+elapsed-time-ms: 46188
 sockets: 1
 energy-joules:
   socket-0:
-    dram: 11.108887000000323
-    cpu: 76.12469500000225
-    package: 99.73700000000099
+    dram: 19.786254999999983
+    cpu: 172.1309199999996
+    package: 243.1381220000003
