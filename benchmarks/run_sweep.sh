@@ -10,7 +10,7 @@ set -euo pipefail
 
 # Benchmarks to run (DaCapo names)
 BENCHMARKS=(
-  "lusearch"
+  "h2o"
   # "lusearch"
   # "kafka"
 )
@@ -20,12 +20,12 @@ RUNS=10
 
 # JVM heap sizes to sweep (passed as -s), e.g. 512m, 1g, 2048m
 HEAP_SIZES=(
-  "19m"
-  "38m"
-  "57m"
-  "76m"
-  "95m"
-  "114m"
+  "72m"
+  "144m"
+  "216m"
+  "288m"
+  "360m"
+  "432m"
 )
 
 # Garbage collectors to sweep (passed as -g)
@@ -50,7 +50,7 @@ CPU_FREQS_MHZ=(
 # Java binaries to sweep (passed as -j).
 # You can leave this as a single "java" entry if you don't want to vary it.
 JAVA_BINS=(
-    /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+    /usr/lib/jvm/java-1.8.0-openjdk-amd64/bin/java
   # "/usr/lib/jvm/java-11/bin/java"
   # "/usr/lib/jvm/java-17/bin/java"
 )

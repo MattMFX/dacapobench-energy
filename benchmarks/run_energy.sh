@@ -375,12 +375,16 @@ if [ -x "${JAVA_DIR}/javac" ]; then
   JAVAC_BIN="${JAVA_DIR}/javac"
 fi
 
-echo -e "${BLUE}Compiling helper classes with: ${JAVAC_BIN}${NC}"
+echo -e "${BLUE}Compiling helper classes and harness wrapper with: ${JAVAC_BIN}${NC}"
 
-# Always compile the callback and jRAPL helper before running
+# Always compile the callback, jRAPL helper, and the Harness wrapper before running.
+# The Harness wrapper ensures we call System.exit(0) when DaCapo finishes, so that
+# benchmarks like H2O that leave non-daemon threads running don't cause the JVM
+# to hang after completion.
 "$JAVAC_BIN" -cp .:dacapo-evaluation-git-52723a30-dirty.jar -d . \
   harness/src/EnergyCallback.java \
-  libs/jRAPL-master/EnergyCheckUtils.java
+  libs/jRAPL-master/EnergyCheckUtils.java \
+  ../src/Harness.java
 
 # Disable hyperthreading and Turbo Boost and, if requested, configure CPU frequency
 disable_hyperthreading
@@ -396,7 +400,7 @@ while [ "$COUNTER" -le "$RUNS" ]; do
     -Ddacapo.energy.yml=energy.yml \
     -Ddacapo.energy.csv=energy.csv \
     -cp .:dacapo-evaluation-git-52723a30-dirty.jar \
-    org.dacapo.harness.TestHarness \
+    Harness \
     -callback EnergyCallback \
     -C \
     "$BENCHMARK"
