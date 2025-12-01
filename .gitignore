@@ -6,6 +6,9 @@ benchmarks/.idea/
 local.properties
 *~
 **/.venv/
+**/energy.yml*
+benchmarks/EnergyCallback.class
+benchmarks/EnergyCheckUtils.class
 
 benchmarks/dacapo-evaluation-git-*
 
