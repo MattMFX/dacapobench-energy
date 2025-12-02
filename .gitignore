@@ -6,7 +6,8 @@ benchmarks/.idea/
 local.properties
 *~
 **/.venv/
-**/energy.yml*
+**/energy.yml
+**/energy.yml.0
 benchmarks/EnergyCallback.class
 benchmarks/EnergyCheckUtils.class
 
