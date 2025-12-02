@@ -10,7 +10,7 @@ set -euo pipefail
 
 # Benchmarks to run (DaCapo names)
 BENCHMARKS=(
-  "h2o"
+  "jython"
   # "lusearch"
   # "kafka"
 )
@@ -20,12 +20,12 @@ RUNS=10
 
 # JVM heap sizes to sweep (passed as -s), e.g. 512m, 1g, 2048m
 HEAP_SIZES=(
-  "72m"
-  "144m"
-  "216m"
-  "288m"
-  "360m"
-  "432m"
+  "25m"
+  "50m"
+  "75m"
+  "100m"
+  "125m"
+  "150m"
 )
 
 # Garbage collectors to sweep (passed as -g)
