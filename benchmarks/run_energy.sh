@@ -370,7 +370,7 @@ while [ "$COUNTER" -le "$RUNS" ]; do
     -callback EnergyCallback \
     -C \
     -s small \
-    --max-iterations 2 \
+    --max-iterations 40 \
     "$BENCHMARK"
 
   COUNTER=$((COUNTER + 1))
