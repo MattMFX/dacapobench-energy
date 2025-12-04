@@ -81,36 +81,13 @@ for bench in "${BENCHMARKS[@]}"; do
           echo "=================================================================="
           echo
 
-          count=1
-          while [ "$count" -le "$RUNS" ]; do
-            echo "--- Run $count of $RUNS ---"
-            output_log=$(mktemp)
-
-            set +e
-            "$RUNNER" \
-              -b "${bench}" \
-              -r "1" \
-              -s "${heap}" \
-              -g "${gc}" \
-              -F "${freq}" \
-              -j "${java_bin}" 2>&1 | tee "$output_log"
-            runner_status=${PIPESTATUS[0]}
-            set -e
-
-            if grep -q "Benchmark failed to converge" "$output_log"; then
-              echo
-              echo "Benchmark failed to converge on run $count. Retrying..."
-              echo
-            elif [ "$runner_status" -ne 0 ]; then
-              echo "Runner failed with exit code $runner_status. Exiting."
-              rm -f "$output_log"
-              exit "$runner_status"
-            else
-              count=$((count + 1))
-            fi
-
-            rm -f "$output_log"
-          done
+          "$RUNNER" \
+            -b "${bench}" \
+            -r "${RUNS}" \
+            -s "${heap}" \
+            -g "${gc}" \
+            -F "${freq}" \
+            -j "${java_bin}"
         done
       done
     done

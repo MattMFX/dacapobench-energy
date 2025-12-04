@@ -361,6 +361,7 @@ COUNTER=1
 while [ "$COUNTER" -le "$RUNS" ]; do
   echo "=== Run $COUNTER of $RUNS for benchmark '$BENCHMARK' (CPU core 0 only) ==="
 
+  output_log=$(mktemp)
   sudo taskset -c 0 "$JAVA_BIN" $JVM_HEAP_OPTS $GC_OPTS $HEAP_PROP $GC_PROP $CPU_FREQ_PROP \
     -Djava.library.path=. \
     -Ddacapo.energy.yml=energy.yml \
@@ -371,7 +372,17 @@ while [ "$COUNTER" -le "$RUNS" ]; do
     -C \
     -s small \
     --max-iterations 40 \
-    "$BENCHMARK"
-
-  COUNTER=$((COUNTER + 1))
+    "$BENCHMARK" 2>&1 | tee "$output_log"
+  
+  # Check for convergence failure
+  if grep -q "Benchmark failed to converge" "$output_log"; then
+    echo
+    echo "Benchmark failed to converge on run $COUNTER. Retrying..."
+    echo
+    # Do not increment COUNTER
+  else
+    COUNTER=$((COUNTER + 1))
+  fi
+  
+  rm -f "$output_log"
 done
