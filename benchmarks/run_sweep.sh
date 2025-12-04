@@ -40,9 +40,10 @@ CPU_FREQS_MHZ=(
   "400MHz"
   "800MHz"
   "1.2GHz"
-  "1.6GHz"
+  "1.8GHz"
   "2.0GHz"
   "2.4GHz"
+  "2.7GHz"
 )
 
 # Java binaries to sweep (passed as -j).
