@@ -10,49 +10,45 @@ set -euo pipefail
 
 # Benchmarks to run (DaCapo names)
 BENCHMARKS=(
+  "biojava"
+  "h2o"
+  "jython"
   "xalan"
-  # "lusearch"
-  # "kafka"
 )
 
 # Number of iterations per benchmark invocation (passed as -r)
 RUNS=10
 
-# JVM heap sizes to sweep (passed as -s), e.g. 512m, 1g, 2048m
-HEAP_SIZES=(
-  "13m"
-  "26m"
-  "39m"
-  "52m"
-  "65m"
-  "78m"
-)
+# JVM heap sizes to sweep (passed as -s), per benchmark.
+# Configure one space-separated list per benchmark name.
+declare -A HEAP_SIZES_BY_BENCH
+
+# Example configurations (edit as needed):
+HEAP_SIZES_BY_BENCH["biojava"]="42m"
+HEAP_SIZES_BY_BENCH["h2o"]="29m 58m 87m 116m 145m 174m"
+HEAP_SIZES_BY_BENCH["jython"]="25m 50m 75m 100m 125m 150m"
+HEAP_SIZES_BY_BENCH["xalan"]="5m 10m 15m 20m 25m 30m"
 
 # Garbage collectors to sweep (passed as -g)
 # Supported values in run_energy.sh: serial, parallel, g1, zgc, shenandoah
 GCS=(
-  "serial"
-  # "g1"
-  # "parallel"
+  "g1"
 )
 
 # CPU frequencies to sweep in MHz (passed as -F)
 CPU_FREQS_MHZ=(
-  "400"
-  "800"
-  "1100"
-  "1600"
-  "2000"
-  "2400"
-  # "2400"
+  # "400MHz"
+  # "800MHz"
+  # "1.2GHz"
+  # "1.6GHz"
+  # "2.0GHz"
+  "2.4GHz"
 )
 
 # Java binaries to sweep (passed as -j).
 # You can leave this as a single "java" entry if you don't want to vary it.
 JAVA_BINS=(
-    /usr/lib/jvm/java-1.8.0-openjdk-amd64/bin/java
-  # "/usr/lib/jvm/java-11/bin/java"
-  # "/usr/lib/jvm/java-17/bin/java"
+    /usr/lib/jvm/java-21-openjdk-amd64/bin/java
 )
 
 # Path to the main runner script (relative to this file)
@@ -68,7 +64,13 @@ if [ ! -x "$RUNNER" ]; then
 fi
 
 for bench in "${BENCHMARKS[@]}"; do
-  for heap in "${HEAP_SIZES[@]}"; do
+  heaps_for_bench="${HEAP_SIZES_BY_BENCH[$bench]:-}"
+  if [ -z "$heaps_for_bench" ]; then
+    echo "Warning: no heap sizes configured for benchmark '${bench}', skipping."
+    continue
+  fi
+
+  for heap in $heaps_for_bench; do
     for gc in "${GCS[@]}"; do
       for freq in "${CPU_FREQS_MHZ[@]}"; do
         for java_bin in "${JAVA_BINS[@]}"; do
@@ -78,13 +80,36 @@ for bench in "${BENCHMARKS[@]}"; do
           echo "=================================================================="
           echo
 
-          "$RUNNER" \
-            -b "${bench}" \
-            -r "${RUNS}" \
-            -s "${heap}" \
-            -g "${gc}" \
-            -F "${freq}" \
-            -j "${java_bin}"
+          count=1
+          while [ "$count" -le "$RUNS" ]; do
+            echo "--- Run $count of $RUNS ---"
+            output_log=$(mktemp)
+
+            set +e
+            "$RUNNER" \
+              -b "${bench}" \
+              -r "1" \
+              -s "${heap}" \
+              -g "${gc}" \
+              -F "${freq}" \
+              -j "${java_bin}" 2>&1 | tee "$output_log"
+            runner_status=${PIPESTATUS[0]}
+            set -e
+
+            if grep -q "Benchmark failed to converge" "$output_log"; then
+              echo
+              echo "Benchmark failed to converge on run $count. Retrying..."
+              echo
+            elif [ "$runner_status" -ne 0 ]; then
+              echo "Runner failed with exit code $runner_status. Exiting."
+              rm -f "$output_log"
+              exit "$runner_status"
+            else
+              count=$((count + 1))
+            fi
+
+            rm -f "$output_log"
+          done
         done
       done
     done

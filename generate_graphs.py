@@ -21,6 +21,19 @@ def parse_heap_size(heap_str):
     except ValueError:
         return 0
 
+def parse_frequency(freq_str):
+    """Parses frequency string (e.g., '1.2GHz', '400MHz') to float MHz."""
+    freq_str = str(freq_str).strip()
+    if freq_str.endswith('GHz'):
+        return float(freq_str[:-3]) * 1000
+    elif freq_str.endswith('MHz'):
+        return float(freq_str[:-3])
+    else:
+        try:
+            return float(freq_str)
+        except ValueError:
+            return 0.0
+
 def get_heap_multiplier(heap_val, min_heap):
     """Calculates heap multiplier (e.g., 1x, 2x)."""
     if min_heap == 0:
@@ -64,8 +77,7 @@ def main():
         )
         
         # Convert Frequency to MHz
-        # The column is already in MHz now
-        bench_df['Frequency (MHz)'] = bench_df['CPU Frequency (MHz)'] 
+        bench_df['Frequency (MHz)'] = bench_df['CPU Frequency (MHz)'].apply(parse_frequency)
         
         # Sort for consistent plotting
         bench_df = bench_df.sort_values(by=['Frequency (MHz)', 'Heap Size MB'])
@@ -143,6 +155,19 @@ def main():
                         alpha=0.15  # Tuned opacity (was 0.2)
                     )
             
+            # Set Y-axis limit to exclude outliers (1x heap)
+            non_outlier = bench_df[bench_df['Heap Label'] != '1x']
+            if not non_outlier.empty:
+                # Calculate max value from non-outlier data (considering CI if available)
+                y_max = non_outlier[config['y_col']].max()
+                if config['ci_high'] in non_outlier.columns:
+                    ci_max = non_outlier[config['ci_high']].max()
+                    if pd.notna(ci_max):
+                        y_max = max(y_max, ci_max)
+                
+                if pd.notna(y_max) and y_max > 0:
+                    plt.ylim(0, y_max * 1.1)
+
             plt.title(config['title'])
             plt.xlabel('Frequency (MHz)')
             plt.ylabel(config['y_label'])

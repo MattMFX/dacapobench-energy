@@ -31,8 +31,8 @@ usage() {
   echo "  -b <benchmark>    DaCapo benchmark name (e.g., lusearch, batik, eclipse, ...)"
   echo "  -r <runs>         Number of times to repeat the benchmark"
   echo "  -s <heap_size>    Optional JVM heap size (e.g., 512m, 2g)."
-  echo "  -F <cpu_freq_mhz> Optional CPU frequency in MHz (must equal one of the discrete"
-  echo "                    frequencies supported by the CPU, e.g., 2400)."
+  echo "  -F <cpu_freq>     Optional CPU frequency (e.g., 800MHz, 2.4GHz)."
+  echo "                    Uses cpupower to set both min and max frequency."
   echo "  -g <gc>           Optional garbage collector: serial, parallel, g1, zgc, shenandoah."
   echo "  -j <java_bin>     Optional Java binary to use (path or command name)."
   echo "  -h                Show this help message and exit."
@@ -41,7 +41,7 @@ usage() {
 BENCHMARK=""
 RUNS=""
 HEAP_SIZE=""
-CPU_FREQ_MHZ=""
+CPU_FREQ=""
 JAVA_BIN_ARG=""
 GC_CHOICE=""
 
@@ -50,7 +50,7 @@ while getopts ":b:r:s:F:g:j:h" opt; do
     b) BENCHMARK="$OPTARG" ;;
     r) RUNS="$OPTARG" ;;
     s) HEAP_SIZE="$OPTARG" ;;
-    F) CPU_FREQ_MHZ="$OPTARG" ;;
+    F) CPU_FREQ="$OPTARG" ;;
     g) GC_CHOICE="$OPTARG" ;;
     j) JAVA_BIN_ARG="$OPTARG" ;;
     h)
@@ -171,42 +171,9 @@ list_available_frequencies() {
 }
 
 configure_cpu_frequency() {
-  if [ -z "$CPU_FREQ_MHZ" ]; then
+  if [ -z "$CPU_FREQ" ]; then
     # No explicit frequency requested
     return
-  fi
-
-  if ! [[ "$CPU_FREQ_MHZ" =~ ^[0-9]+$ ]]; then
-    echo -e "${RED}Error: CPU frequency '$CPU_FREQ_MHZ' must be an integer in MHz.${NC}"
-    exit 1
-  fi
-
-  # Convert MHz → kHz for comparison with kernel-reported frequencies and cpupower.
-  local CPU_FREQ_KHZ
-  CPU_FREQ_KHZ=$((CPU_FREQ_MHZ * 1000))
-
-  local available
-  available=$(list_available_frequencies)
-
-  if [ -z "$available" ]; then
-    echo -e "${YELLOW}CPU frequency scaling information not available; cannot configure frequency.${NC}"
-    exit 1
-  fi
-
-  echo -e "${BLUE}Available CPU frequencies (kHz):${NC} ${available}"
-
-  local match="false"
-  for f in $available; do
-    if [ "$CPU_FREQ_KHZ" = "$f" ]; then
-      match="true"
-      break
-    fi
-  done
-
-  if [ "$match" != "true" ]; then
-    echo -e "${RED}Error: CPU frequency '$CPU_FREQ_KHZ' is not supported by this CPU.${NC}"
-    echo -e "${YELLOW}Available frequencies (kHz):${NC} ${available}"
-    exit 1
   fi
 
   local gov_file="/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"
@@ -223,16 +190,24 @@ configure_cpu_frequency() {
     OLD_MAX_FREQ=$(cat "$max_file")
   fi
 
-  echo -e "${BLUE}Setting CPU frequency to ${CPU_FREQ_MHZ} MHz (${CPU_FREQ_KHZ} kHz) on all supported cores using cpupower...${NC}"
+  echo -e "${BLUE}Setting CPU frequency to ${CPU_FREQ} on all supported cores using cpupower...${NC}"
 
-  # Use cpupower to set governor and frequency for all CPUs.
-  # Requires cpupower to be installed and run with sufficient privileges.
+  # Set userspace governor first, then set min and max frequency.
   sudo cpupower frequency-set -g userspace > /dev/null 2>&1
-  sudo cpupower frequency-set -f "${CPU_FREQ_KHZ}" > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
+     echo -e "${RED}Error: Failed to set CPU governor to userspace.${NC}"
+     exit 1
+  fi
+
+  sudo cpupower frequency-set -d ${CPU_FREQ} -u ${CPU_FREQ} > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
+     echo -e "${RED}Error: Failed to set CPU frequency to '${CPU_FREQ}'.${NC}"
+     exit 1
+  fi
 
   CPU_FREQ_CONFIGURED="true"
-  CPU_FREQ_PROP="-Ddacapo.cpu.freq_mhz=${CPU_FREQ_MHZ}"
-  echo -e "${GREEN}CPU frequency set to ${CPU_FREQ_MHZ} MHz.${NC}"
+  CPU_FREQ_PROP="-Ddacapo.cpu.freq_mhz=${CPU_FREQ}"
+  echo -e "${GREEN}CPU frequency set to ${CPU_FREQ}.${NC}"
 }
 
 restore_cpu_frequency() {
@@ -242,23 +217,14 @@ restore_cpu_frequency() {
 
   echo -e "${BLUE}Restoring previous CPU frequency configuration...${NC}"
 
-  for cpu_dir in /sys/devices/system/cpu/cpu[0-9]*; do
-    [ -d "$cpu_dir" ] || continue
-
-    local cgov="$cpu_dir/cpufreq/scaling_governor"
-    local cmin="$cpu_dir/cpufreq/scaling_min_freq"
-    local cmax="$cpu_dir/cpufreq/scaling_max_freq"
-
-    if [ -n "$OLD_GOVERNOR" ] && [ -w "$cgov" ]; then
-      echo "$OLD_GOVERNOR" | sudo tee "$cgov" > /dev/null 2>&1
-    fi
-    if [ -n "$OLD_MIN_FREQ" ] && [ -w "$cmin" ]; then
-      echo "$OLD_MIN_FREQ" | sudo tee "$cmin" > /dev/null 2>&1
-    fi
-    if [ -n "$OLD_MAX_FREQ" ] && [ -w "$cmax" ]; then
-      echo "$OLD_MAX_FREQ" | sudo tee "$cmax" > /dev/null 2>&1
-    fi
-  done
+  # Restore using cpupower if we have the old values
+  if [ -n "$OLD_GOVERNOR" ]; then
+      sudo cpupower frequency-set -g $OLD_GOVERNOR > /dev/null 2>&1
+  fi
+  
+  if [ -n "$OLD_MIN_FREQ" ] && [ -n "$OLD_MAX_FREQ" ]; then
+      sudo cpupower frequency-set -d $OLD_MIN_FREQ -u $OLD_MAX_FREQ > /dev/null 2>&1
+  fi
 
   echo -e "${GREEN}CPU frequency configuration restored.${NC}"
 }
@@ -403,6 +369,8 @@ while [ "$COUNTER" -le "$RUNS" ]; do
     Harness \
     -callback EnergyCallback \
     -C \
+    -s small \
+    --max-iterations 2 \
     "$BENCHMARK"
 
   COUNTER=$((COUNTER + 1))
