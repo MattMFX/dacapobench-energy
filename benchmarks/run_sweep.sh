@@ -24,7 +24,7 @@ RUNS=10
 declare -A HEAP_SIZES_BY_BENCH
 
 # Example configurations (edit as needed):
-HEAP_SIZES_BY_BENCH["biojava"]="42m"
+HEAP_SIZES_BY_BENCH["biojava"]="7m 14m 21m 28m 35m 42m"
 HEAP_SIZES_BY_BENCH["h2o"]="29m 58m 87m 116m 145m 174m"
 HEAP_SIZES_BY_BENCH["jython"]="25m 50m 75m 100m 125m 150m"
 HEAP_SIZES_BY_BENCH["xalan"]="5m 10m 15m 20m 25m 30m"
@@ -37,11 +37,11 @@ GCS=(
 
 # CPU frequencies to sweep in MHz (passed as -F)
 CPU_FREQS_MHZ=(
-  # "400MHz"
-  # "800MHz"
-  # "1.2GHz"
-  # "1.6GHz"
-  # "2.0GHz"
+  "400MHz"
+  "800MHz"
+  "1.2GHz"
+  "1.6GHz"
+  "2.0GHz"
   "2.4GHz"
 )
 
