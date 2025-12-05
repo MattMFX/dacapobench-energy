@@ -24,10 +24,18 @@ RUNS=10
 declare -A HEAP_SIZES_BY_BENCH
 
 # Example configurations (edit as needed):
-HEAP_SIZES_BY_BENCH["biojava"]="7m 14m 21m 28m 35m 42m"
-HEAP_SIZES_BY_BENCH["h2o"]="29m 58m 87m 116m 145m 174m"
-HEAP_SIZES_BY_BENCH["jython"]="25m 50m 75m 100m 125m 150m"
-HEAP_SIZES_BY_BENCH["xalan"]="5m 10m 15m 20m 25m 30m"
+# HEAP_SIZES_BY_BENCH["biojava"]="7m 14m 21m 28m 35m 42m"
+# HEAP_SIZES_BY_BENCH["h2o"]="29m 58m 87m 116m 145m 174m" //TODO RODAR DE NOVO JAVA 21
+# HEAP_SIZES_BY_BENCH["jython"]="25m 50m 75m 100m 125m 150m"
+# HEAP_SIZES_BY_BENCH["xalan"]="5m 10m 15m 20m 25m 30m"
+HEAP_SIZES_BY_BENCH["h2"]="69m 138m 207m 276m 345m 414m"
+HEAP_SIZES_BY_BENCH["luindex"]="13m 26m 39m 52m 65m 78m"
+HEAP_SIZES_BY_BENCH["graphchi"]="141m 282m 423m 564m 705m 846m"
+HEAP_SIZES_BY_BENCH["batik"]="19m 38m 57m 76m 95m 114m"
+HEAP_SIZES_BY_BENCH["sunflow"]="5m 10m 15m 20m 25m 30m"
+HEAP_SIZES_BY_BENCH["zxing"]="5m 10m 15m 20m 25m 30m"
+
+
 
 # Garbage collectors to sweep (passed as -g)
 # Supported values in run_energy.sh: serial, parallel, g1, zgc, shenandoah
