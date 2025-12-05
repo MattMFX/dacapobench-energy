@@ -10,10 +10,16 @@ set -euo pipefail
 
 # Benchmarks to run (DaCapo names)
 BENCHMARKS=(
-  "biojava"
-  "h2o"
-  "jython"
-  "xalan"
+  # "biojava"
+  # "h2o"
+  # "jython"
+  # "xalan"
+  "h2"
+  "luindex"
+  "graphchi"
+  "batik"
+  "sunflow"
+  "zxing"
 )
 
 # Number of iterations per benchmark invocation (passed as -r)
