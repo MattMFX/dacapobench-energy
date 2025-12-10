@@ -10,28 +10,28 @@ set -euo pipefail
 
 # Benchmarks to run (DaCapo names)
 BENCHMARKS=(
-  # "biojava"
+  "biojava"
   # "h2o"
-  # "jython"
-  # "xalan"
-  # "h2"
-  # "luindex"
-  # "graphchi"
-  # "batik"
-  # "sunflow"
-  # "zxing"
+  "jython"
+  "xalan"
+  "h2"
+  "luindex"
+  "graphchi"
+  "batik"
+  "sunflow"
+  "zxing"
   # "jme"
   # "pmd"
   # "tradebeans"
   # "fop"
   # "spring"
-  "cassandra"
-  "eclipse"
-  "tradesoap"
-  "lusearch"
-  "kafka"
-  "avrora"
-  "tomcat"
+  # "cassandra"
+  # "eclipse"
+  # "tradesoap"
+  # "lusearch"
+  # "kafka"
+  # "avrora"
+  # "tomcat"
 )
 
 # Number of iterations per benchmark invocation (passed as -r)
@@ -42,28 +42,28 @@ RUNS=10
 declare -A HEAP_SIZES_BY_BENCH
 
 # Example configurations (edit as needed): 
-# HEAP_SIZES_BY_BENCH["biojava"]="7m 14m 21m 28m 35m 42m" //RODAR NOVAMENTE NA FREQUENCIA 2.2GHz (INVÉS DE 2.OGHz)
+HEAP_SIZES_BY_BENCH["biojava"]="7m 14m 21m 28m 35m 42m"
 # HEAP_SIZES_BY_BENCH["h2o"]="29m 58m 87m 116m 145m 174m" //TODO RODAR DE NOVO JAVA 21
-# HEAP_SIZES_BY_BENCH["jython"]="25m 50m 75m 100m 125m 150m" //RODAR NOVAMENTE NA FREQUENCIA 2.2GHz (INVÉS DE 2.OGHz)
-# HEAP_SIZES_BY_BENCH["xalan"]="5m 10m 15m 20m 25m 30m" //RODAR NOVAMENTE NA FREQUENCIA 2.2GHz (INVÉS DE 2.OGHz)
-# HEAP_SIZES_BY_BENCH["h2"]="69m 138m 207m 276m 345m 414m" //RODAR NOVAMENTE NA FREQUENCIA 2.2GHz (INVÉS DE 2.OGHz)
-# HEAP_SIZES_BY_BENCH["luindex"]="13m 26m 39m 52m 65m 78m" //RODAR NOVAMENTE NA FREQUENCIA 2.2GHz (INVÉS DE 2.OGHz)
-# HEAP_SIZES_BY_BENCH["graphchi"]="141m 282m 423m 564m 705m 846m" //RODAR NOVAMENTE NA FREQUENCIA 2.2GHz (INVÉS DE 2.OGHz)
-# HEAP_SIZES_BY_BENCH["batik"]="19m 38m 57m 76m 95m 114m" //RODAR NOVAMENTE NA FREQUENCIA 2.2GHz (INVÉS DE 2.OGHz)
-# HEAP_SIZES_BY_BENCH["sunflow"]="5m 10m 15m 20m 25m 30m" //RODAR NOVAMENTE NA FREQUENCIA 2.2GHz (INVÉS DE 2.OGHz)
-# HEAP_SIZES_BY_BENCH["zxing"]="5m 10m 15m 20m 25m 30m" //RODAR NOVAMENTE NA FREQUENCIA 2.2GHz (INVÉS DE 2.OGHz)
+HEAP_SIZES_BY_BENCH["jython"]="25m 50m 75m 100m 125m 150m"
+HEAP_SIZES_BY_BENCH["xalan"]="5m 10m 15m 20m 25m 30m"
+HEAP_SIZES_BY_BENCH["h2"]="69m 138m 207m 276m 345m 414m"
+HEAP_SIZES_BY_BENCH["luindex"]="13m 26m 39m 52m 65m 78m"
+HEAP_SIZES_BY_BENCH["graphchi"]="141m 282m 423m 564m 705m 846m"
+HEAP_SIZES_BY_BENCH["batik"]="19m 38m 57m 76m 95m 114m"
+HEAP_SIZES_BY_BENCH["sunflow"]="5m 10m 15m 20m 25m 30m"
+HEAP_SIZES_BY_BENCH["zxing"]="5m 10m 15m 20m 25m 30m"
 # HEAP_SIZES_BY_BENCH["jme"]="29m 58m 87m 116m 145m 174m"
 # HEAP_SIZES_BY_BENCH["pmd"]="7m 14m 21m 28m 35m 42m"
 # HEAP_SIZES_BY_BENCH["tradebeans"]="73m 146m 219m 292m 365m 438m" // CONSERTAR PROBLEMA PARA RODAR NOVAMENTE
 # HEAP_SIZES_BY_BENCH["fop"]="9m 18m 27m 36m 45m 54m"
 # HEAP_SIZES_BY_BENCH["spring"]="43m 86m 129m 172m 215m 258m"
-HEAP_SIZES_BY_BENCH["cassandra"]="77m 154m 231m 308m 385m 462m"
-HEAP_SIZES_BY_BENCH["eclipse"]="13m 26m 39m 52m 65m 78m"
-HEAP_SIZES_BY_BENCH["tradesoap"]="75m 150m 225m 300m 375m 450m"
-HEAP_SIZES_BY_BENCH["lusearch"]="5m 10m 15m 20m 25m 30m"
-HEAP_SIZES_BY_BENCH["kafka"]="157m 314m 471m 628m 785m 942m"
-HEAP_SIZES_BY_BENCH["avrora"]="5m 10m 15m 20m 25m 30m"
-HEAP_SIZES_BY_BENCH["tomcat"]="13m 26m 39m 52m 65m 78m"
+# HEAP_SIZES_BY_BENCH["cassandra"]="77m 154m 231m 308m 385m 462m" // CONSERTAR PROBLEMA PARA RODAR NOVAMENTE
+# HEAP_SIZES_BY_BENCH["eclipse"]="13m 26m 39m 52m 65m 78m" // CONSERTAR PROBLEMA PARA RODAR NOVAMENTE
+# HEAP_SIZES_BY_BENCH["tradesoap"]="75m 150m 225m 300m 375m 450m" // CONSERTAR PROBLEMA PARA RODAR NOVAMENTE
+# HEAP_SIZES_BY_BENCH["lusearch"]="5m 10m 15m 20m 25m 30m"
+# HEAP_SIZES_BY_BENCH["kafka"]="157m 314m 471m 628m 785m 942m" // CONSERTAR PROBLEMA PARA RODAR NOVAMENTE (HEAP INSUFICIENTE)
+# HEAP_SIZES_BY_BENCH["avrora"]="5m 10m 15m 20m 25m 30m"
+# HEAP_SIZES_BY_BENCH["tomcat"]="13m 26m 39m 52m 65m 78m" CONSERTAR PROBLEMA PARA RODAR NOVAMENTE
 
 # Garbage collectors to sweep (passed as -g)
 # Supported values in run_energy.sh: serial, parallel, g1, zgc, shenandoah
@@ -73,13 +73,13 @@ GCS=(
 
 # CPU frequencies to sweep in MHz (passed as -F)
 CPU_FREQS_MHZ=(
-  "400MHz"
-  "800MHz"
-  "1.2GHz"
+  # "400MHz"
+  # "800MHz"
+  # "1.2GHz"
   "1.6GHz"
-  "2.0GHz"
-  "2.4GHz"
-  "2.7GHz"
+  # "2.0GHz"
+  # "2.4GHz"
+  # "2.7GHz"
 )
 
 # Java binaries to sweep (passed as -j).
