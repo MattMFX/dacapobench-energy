@@ -357,12 +357,34 @@ disable_hyperthreading
 disable_turboboost
 configure_cpu_frequency
 
+# H2O workaround for newer Java versions (which H2O technically doesn't support yet)
+EXTRA_JVM_OPTS=""
+if [ "$BENCHMARK" = "h2o" ]; then
+    # Attempt to detect Java version
+    raw_ver=$("$JAVA_BIN" -version 2>&1 | head -n 1)
+    # Match "version "X..."
+    if [[ "$raw_ver" =~ version\ \"([0-9]+) ]]; then
+        ver="${BASH_REMATCH[1]}"
+        # Handle 1.8.x style
+        if [ "$ver" -eq 1 ] && [[ "$raw_ver" =~ version\ \"1\.([0-9]+) ]]; then
+            ver="${BASH_REMATCH[1]}"
+        fi
+        
+        # If newer than 17, add the override flag
+        if [ "$ver" -gt 17 ]; then
+             # --add-opens is needed because H2O uses reflection that is blocked by default in Java 16+
+             EXTRA_JVM_OPTS="-Dsys.ai.h2o.debug.allowJavaVersions=$ver --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED"
+             echo -e "${YELLOW}Detected H2O on Java $ver. Adding compatibility flags: $EXTRA_JVM_OPTS${NC}"
+        fi
+    fi
+fi
+
 COUNTER=1
 while [ "$COUNTER" -le "$RUNS" ]; do
   echo "=== Run $COUNTER of $RUNS for benchmark '$BENCHMARK' (CPU core 0 only) ==="
 
   output_log=$(mktemp)
-  sudo taskset -c 0 "$JAVA_BIN" $JVM_HEAP_OPTS $GC_OPTS $HEAP_PROP $GC_PROP $CPU_FREQ_PROP \
+  sudo taskset -c 0 "$JAVA_BIN" $JVM_HEAP_OPTS $GC_OPTS $HEAP_PROP $GC_PROP $CPU_FREQ_PROP $EXTRA_JVM_OPTS \
     -Djava.library.path=. \
     -Ddacapo.energy.yml=energy.yml \
     -Ddacapo.energy.csv=energy.csv \
