@@ -1,11 +1,32 @@
+import argparse
+import os
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import os
 
 # Configuration
-INPUT_FILE = 'benchmarks/energy_stats.csv'
-OUTPUT_DIR = 'benchmarks/graphs'
+DEFAULT_INPUT_FILE = 'benchmarks/energy_stats.csv'
+DEFAULT_OUTPUT_DIR = 'benchmarks/graphs'
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description='Generate energy benchmark graphs from stats CSV.'
+    )
+    parser.add_argument(
+        '-i', '--input',
+        default=DEFAULT_INPUT_FILE,
+        metavar='CSV',
+        help=f'Input stats CSV file (default: {DEFAULT_INPUT_FILE})',
+    )
+    parser.add_argument(
+        '-o', '--output',
+        default=DEFAULT_OUTPUT_DIR,
+        metavar='DIR',
+        help=f'Output directory for graph images (default: {DEFAULT_OUTPUT_DIR})',
+    )
+    return parser.parse_args()
 
 def parse_heap_size(heap_str):
     """Parses heap size string (e.g., '100m') to integer MB."""
@@ -47,14 +68,18 @@ def get_heap_multiplier(heap_val, min_heap):
         return f"{mult:.1f}x"
 
 def main():
+    args = parse_args()
+    input_file = args.input
+    output_dir = args.output
+
     # Ensure output directory exists
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
 
     # Load data
     try:
-        df = pd.read_csv(INPUT_FILE)
+        df = pd.read_csv(input_file)
     except FileNotFoundError:
-        print(f"Error: File {INPUT_FILE} not found.")
+        print(f"Error: File {input_file} not found.")
         return
 
     # Preprocess Data
@@ -175,12 +200,12 @@ def main():
             plt.legend(title='Heap Size')
             
             # Save
-            output_path = os.path.join(OUTPUT_DIR, config['filename'])
+            output_path = os.path.join(output_dir, config['filename'])
             plt.savefig(output_path)
             plt.close()
             print(f"Generated {output_path}")
 
-    print(f"\nAll graphs generated in {OUTPUT_DIR}")
+    print(f"\nAll graphs generated in {output_dir}")
 
 if __name__ == "__main__":
     main()

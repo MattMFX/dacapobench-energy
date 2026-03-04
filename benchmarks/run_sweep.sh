@@ -3,34 +3,44 @@
 # Sequential sweeper for run_energy.sh.
 # Edit the arrays below to define the combinations you want to run.
 # All runs are executed strictly one after another (no parallelism).
+#
+# Usage:
+#   ./run_sweep.sh [ -o <csv_file> ]
+#
+#   -o <csv_file>  : optional output CSV filename for energy data. All sweep
+#                    runs append to this file. Defaults to 'energy.csv'.
+#                    Can also be set via the OUTPUT_CSV variable below.
 
 set -euo pipefail
 
 # --- Configuration ---------------------------------------------------------
 
+# Output CSV filename for energy data (used when -o is not passed on the command line).
+OUTPUT_CSV="${OUTPUT_CSV:-energy.csv}"
+
 # Benchmarks to run (DaCapo names)
 BENCHMARKS=(
-  # "biojava"
+  "biojava"
   "h2o"
-  # "jython"
-  # "xalan"
-  # "h2"
-  # "luindex"
-  # "graphchi"
-  # "batik"
-  # "sunflow"
-  # "zxing"
-  # "jme"
-  # "pmd"
+  "jython"
+  "xalan"
+  "h2"
+  "luindex"
+  "graphchi"
+  "batik"
+  "sunflow"
+  "zxing"
+  "jme"
+  "pmd"
   # "tradebeans"
-  # "fop"
-  # "spring"
+  "fop"
+  "spring"
   # "cassandra"
   # "eclipse"
   # "tradesoap"
-  # "lusearch"
+  "lusearch"
   # "kafka"
-  # "avrora"
+  "avrora"
   # "tomcat"
 )
 
@@ -42,34 +52,35 @@ RUNS=10
 declare -A HEAP_SIZES_BY_BENCH
 
 # Example configurations (edit as needed): 
-# HEAP_SIZES_BY_BENCH["biojava"]="7m 14m 21m 28m 35m 42m"
+HEAP_SIZES_BY_BENCH["biojava"]="7m 14m 21m 28m 35m 42m"
 # HEAP_SIZES_BY_BENCH["h2o"]="29m 58m 87m 116m 145m 174m" # VERSÃO COM HEAPS MENORES
 HEAP_SIZES_BY_BENCH["h2o"]="58m 87m 116m 145m 174m" # VERSÃO COM HEAPS MAIORES
-# HEAP_SIZES_BY_BENCH["jython"]="25m 50m 75m 100m 125m 150m"
-# HEAP_SIZES_BY_BENCH["xalan"]="5m 10m 15m 20m 25m 30m"
-# HEAP_SIZES_BY_BENCH["h2"]="69m 138m 207m 276m 345m 414m"
-# HEAP_SIZES_BY_BENCH["luindex"]="13m 26m 39m 52m 65m 78m"
-# HEAP_SIZES_BY_BENCH["graphchi"]="141m 282m 423m 564m 705m 846m"
-# HEAP_SIZES_BY_BENCH["batik"]="19m 38m 57m 76m 95m 114m"
-# HEAP_SIZES_BY_BENCH["sunflow"]="5m 10m 15m 20m 25m 30m"
-# HEAP_SIZES_BY_BENCH["zxing"]="5m 10m 15m 20m 25m 30m"
-# HEAP_SIZES_BY_BENCH["jme"]="29m 58m 87m 116m 145m 174m"
-# HEAP_SIZES_BY_BENCH["pmd"]="7m 14m 21m 28m 35m 42m"
-# HEAP_SIZES_BY_BENCH["tradebeans"]="73m 146m 219m 292m 365m 438m" // CONSERTAR PROBLEMA PARA RODAR NOVAMENTE
-# HEAP_SIZES_BY_BENCH["fop"]="9m 18m 27m 36m 45m 54m"
-# HEAP_SIZES_BY_BENCH["spring"]="43m 86m 129m 172m 215m 258m"
-# HEAP_SIZES_BY_BENCH["cassandra"]="77m 154m 231m 308m 385m 462m" // CONSERTAR PROBLEMA PARA RODAR NOVAMENTE
-# HEAP_SIZES_BY_BENCH["eclipse"]="13m 26m 39m 52m 65m 78m" // CONSERTAR PROBLEMA PARA RODAR NOVAMENTE
-# HEAP_SIZES_BY_BENCH["tradesoap"]="75m 150m 225m 300m 375m 450m" // CONSERTAR PROBLEMA PARA RODAR NOVAMENTE
-# HEAP_SIZES_BY_BENCH["lusearch"]="5m 10m 15m 20m 25m 30m"
-# HEAP_SIZES_BY_BENCH["kafka"]="157m 314m 471m 628m 785m 942m" // CONSERTAR PROBLEMA PARA RODAR NOVAMENTE (HEAP INSUFICIENTE)
-# HEAP_SIZES_BY_BENCH["avrora"]="5m 10m 15m 20m 25m 30m"
-# HEAP_SIZES_BY_BENCH["tomcat"]="13m 26m 39m 52m 65m 78m" CONSERTAR PROBLEMA PARA RODAR NOVAMENTE
+HEAP_SIZES_BY_BENCH["jython"]="25m 50m 75m 100m 125m 150m"
+HEAP_SIZES_BY_BENCH["xalan"]="5m 10m 15m 20m 25m 30m"
+HEAP_SIZES_BY_BENCH["h2"]="69m 138m 207m 276m 345m 414m"
+HEAP_SIZES_BY_BENCH["luindex"]="13m 26m 39m 52m 65m 78m"
+HEAP_SIZES_BY_BENCH["graphchi"]="141m 282m 423m 564m 705m 846m"
+HEAP_SIZES_BY_BENCH["batik"]="19m 38m 57m 76m 95m 114m"
+HEAP_SIZES_BY_BENCH["sunflow"]="5m 10m 15m 20m 25m 30m"
+HEAP_SIZES_BY_BENCH["zxing"]="5m 10m 15m 20m 25m 30m"
+HEAP_SIZES_BY_BENCH["jme"]="29m 58m 87m 116m 145m 174m"
+HEAP_SIZES_BY_BENCH["pmd"]="7m 14m 21m 28m 35m 42m"
+# HEAP_SIZES_BY_BENCH["tradebeans"]="73m 146m 219m 292m 365m 438m" # CONSERTAR PROBLEMA PARA RODAR NOVAMENTE
+HEAP_SIZES_BY_BENCH["fop"]="9m 18m 27m 36m 45m 54m"
+HEAP_SIZES_BY_BENCH["spring"]="43m 86m 129m 172m 215m 258m"
+# HEAP_SIZES_BY_BENCH["cassandra"]="77m 154m 231m 308m 385m 462m" # CONSERTAR PROBLEMA PARA RODAR NOVAMENTE
+# HEAP_SIZES_BY_BENCH["eclipse"]="13m 26m 39m 52m 65m 78m" # CONSERTAR PROBLEMA PARA RODAR NOVAMENTE
+# HEAP_SIZES_BY_BENCH["tradesoap"]="75m 150m 225m 300m 375m 450m" # CONSERTAR PROBLEMA PARA RODAR NOVAMENTE
+HEAP_SIZES_BY_BENCH["lusearch"]="5m 10m 15m 20m 25m 30m"
+# HEAP_SIZES_BY_BENCH["kafka"]="157m 314m 471m 628m 785m 942m" # CONSERTAR PROBLEMA PARA RODAR NOVAMENTE (HEAP INSUFICIENTE)
+HEAP_SIZES_BY_BENCH["avrora"]="5m 10m 15m 20m 25m 30m"
+# HEAP_SIZES_BY_BENCH["tomcat"]="13m 26m 39m 52m 65m 78m" # CONSERTAR PROBLEMA PARA RODAR NOVAMENTE
 
 # Garbage collectors to sweep (passed as -g)
 # Supported values in run_energy.sh: serial, parallel, g1, zgc, shenandoah
 GCS=(
-  "g1"
+  # "g1"
+  serial
 )
 
 # CPU frequencies to sweep in MHz (passed as -F)
@@ -96,10 +107,24 @@ RUNNER="./run_energy.sh"
 
 cd "$(dirname "$0")"
 
+# Parse -o <csv_file> so it overrides OUTPUT_CSV
+while getopts ":o:" opt; do
+  case "$opt" in
+    o) OUTPUT_CSV="$OPTARG" ;;
+    \?)
+      echo "Error: Invalid option -$OPTARG. Use -o <csv_file> or no options." >&2
+      exit 1
+      ;;
+  esac
+done
+shift $((OPTIND - 1))
+
 if [ ! -x "$RUNNER" ]; then
   echo "Error: runner script '$RUNNER' not found or not executable." >&2
   exit 1
 fi
+
+echo "Output CSV: ${OUTPUT_CSV}"
 
 for bench in "${BENCHMARKS[@]}"; do
   heaps_for_bench="${HEAP_SIZES_BY_BENCH[$bench]:-}"
@@ -124,7 +149,8 @@ for bench in "${BENCHMARKS[@]}"; do
             -s "${heap}" \
             -g "${gc}" \
             -F "${freq}" \
-            -j "${java_bin}"
+            -j "${java_bin}" \
+            -o "${OUTPUT_CSV}"
         done
       done
     done
