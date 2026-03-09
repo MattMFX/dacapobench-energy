@@ -1,0 +1,60 @@
+\chapter{Introdução}
+
+
+A discussão sobre a eficiência energética de tecnologias da informação e
+comunicação (TIC) sempre teve como foco a melhoria dos componentes de
+\textit{hardware}. \citeonline{koomeys-law} observaram uma tendência de
+melhoria exponencial desses dispositivos, com duplicação aproximada da
+eficiência energética a cada um ano e meio, tendência conhecida popularmente
+como Lei de Koomey. Essa tendência de crescimento exponencial se confirma mais
+recentemente, ainda que em um ritmo mais lento do que o previsto anteriormente
+\cite{koomeys-law-revisited}. O sucesso em otimizar a eficiência do
+\textit{hardware} oculta, porém, outro aspecto das TIC que recebe menos
+atenção: o \textit{software} \cite{is-software-green}. Os esforços para
+melhorar a eficiência das TIC devem ser compartilhados por desenvolvedores de
+\textit{hardware} e \textit{software} se quisermos potencializar essa economia
+de energia, o que se torna cada vez mais relevante com o crescimento dos
+dispositivos móveis.
+
+Apesar da predominância do \textit{hardware}, o interesse dos desenvolvedores
+em assuntos relacionados ao consumo de energia em \textit{software} é crescente
+\cite{mining-questions}. Isso evidencia a relevância do tema. Além desse
+crescimento, \citeonline{mining-questions} também mostram um engajamento dos
+desenvolvedores maior que a média quando comparado com outros temas. Por outro
+lado, o mesmo estudo mostra que o entendimento sobre o assunto ainda era
+limitado, apoiando-se em soluções genéricas e em discussões pouco aprofundadas.
+Além disso, de forma mais abrangente, o campo de \textit{green computing}
+(computação verde) atrai cada vez mais atenção dos pesquisadores, considerando
+que o número de publicações ligadas ao tema aumentou de forma consistente entre
+2007 e 2022 \cite{green-computing-past-present-future,
+green-computing-literature-survey}. O aumento da relevância do tema ressalta a
+importância de fornecer a desenvolvedores e pesquisadores métricas precisas
+relacionadas à energia, para que possam analisar os impactos de suas decisões
+na eficiência energética das aplicações.
+
+O uso de \textit{benchmarks} para avaliação de \textit{software} é parte
+importante do seu processo de desenvolvimento. Porém, métricas relacionadas ao
+consumo de energia e à eficiência energética dessas aplicações raramente são
+consideradas na elaboração desses \textit{benchmarks}. No ecossistema Java, as
+ferramentas mais utilizadas para esse tipo de análise, como os conjuntos de
+\textit{benchmarks} Renaissance \cite{renaissance}, DaCapo
+\cite{dacapochopin} e SPEC \cite{spec}, não incluem métricas relacionadas ao
+desempenho sob a perspectiva do consumo de energia. Isso representa uma
+limitação importante, que pode levar desenvolvedores e pesquisadores a tomar
+decisões menos bem informadas, resultando em custos energéticos mais altos que
+passam despercebidos. A primeira contribuição deste trabalho é o
+desenvolvimento de uma extensão ao pacote de \textit{benchmarks} DaCapo
+Chopin, adicionando uma forma de medir o consumo de energia.
+
+Devido à falta de medidas relacionadas à energia nessas ferramentas, a
+avaliação da eficiência energética das aplicações é muitas vezes inferida a
+partir do tempo de execução. Ainda que haja correlação entre essas duas
+métricas, consumo de energia e tempo de execução não estão perfeitamente
+relacionados \cite{programming_lang_energy}. Isso justifica a importância de
+testá-las e analisá-las separadamente. A partir da extensão desenvolvida e dos
+dados disponibilizados por \citeonline{dacapochopin}, foi realizada uma análise
+do consumo de energia e da eficiência energética para 16 cargas de trabalho da
+ferramenta, sob diferentes configurações da Java Virtual Machine (JVM) e do
+\textit{hardware} utilizado. Com base nessas métricas, este trabalho tem como
+objetivo compreender o comportamento do consumo de energia da JVM para os
+programas avaliados.

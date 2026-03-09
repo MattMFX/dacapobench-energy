@@ -1,0 +1,92 @@
+% ----------------------------------------------------------
+% Introdução 
+% Capítulo sem numeração, mas presente no Sumário
+% ----------------------------------------------------------
+
+\chapter*[Introdução]{Introdução}
+\addcontentsline{toc}{chapter}{Introdução}
+
+Este documento segue as normas estabelecidas pela~\citeonline[3.1-3.2]{NBR6028:2003}.
+
+\section*{Figuras}\label{sec:figuras}
+\addcontentsline{toc}{section}{figuras}
+
+As normas da~\citeonline[3.1-3.2]{NBR6028:2003} especificam que o caption da figura deve vir abaixo da mesma.
+
+A Figura~\ref{fig:log} ilustra...
+
+\begin{figure}[htpb]
+   \centering
+   \includegraphics[scale=.3]{figs/logo}
+   \caption{Breve explicação sobre a figura. Deve vir abaixo da mesma.}
+   \label{fig:log}
+\end{figure}
+
+\section*{Tabelas}\label{sec:tabelas}
+\addcontentsline{toc}{section}{tabelas}
+
+A Tabela~\ref{tab:tabela} apresenta os resultados...
+
+\begin{table}[htpb]
+   \centering
+   \caption{Breve explicação sobre a tabela. Deve vir acima da mesma.}\label{tab:tabela}
+   \begin{tabular}{|l|c|c|c|c|c|c|r|}
+        \hline
+        \small{XX} & \small{FF} & \small{PP} & \small{YY} & \small{Yr} & \small{xY} & \small{Yx} & \small{ZZ} \\ \hline
+               615 &    18      &     2558   &    0,9930  &    0,9930  &    0,9930  &    0,9930  &    0,9930  \\ \hline
+               615 &    18      &     2558   &    0,9930  &    0,9930  &    0,9930  &    0,9930  &    0,9930  \\ \hline
+               615 &    18      &     2558   &    0,9930  &    0,9930  &    0,9930  &    0,9930  &    0,9930  \\ \hline
+               615 &    18      &     2558   &    0,9930  &    0,9930  &    0,9930  &    0,9930  &    0,9930  \\ \hline
+               615 &    18      &     2558   &    0,9930  &    0,9930  &    0,9930  &    0,9930  &    0,9930  \\ \hline
+   \end{tabular}
+\end{table}
+
+A formatação das referências bibliográficas conforme as regras da ABNT são um
+dos principais objetivos do \abnTeX. Consulte os manuais
+\citeonline{abntex2cite} e \citeonline{abntex2cite-alf} para obter informações
+sobre como utilizar as referências bibliográficas.
+
+%-
+\subsection{Acentuação de referências bibliográficas}
+%-
+
+Normalmente não há problemas em usar caracteres acentuados em arquivos
+bibliográficos (\texttt{*.bib}). Na~\autoref{tabela-acentos} você encontra alguns exemplos das conversões mais importantes. Preste atenção especial para `ç' e `í'
+que devem estar envoltos em chaves. A regra geral é sempre usar a acentuação
+neste modo quando houver conversão para letras maiúsculas.
+
+\begin{table}[htbp]
+\caption{Tabela de conversão de acentuação.}
+\label{tabela-acentos}
+
+\begin{center}
+\begin{tabular}{ll}\hline\hline
+acento & \textsf{bibtex}\\
+à á ã & \verb+\`a+ \verb+\'a+ \verb+\~a+\\
+í & \verb+{\'\i}+\\
+ç & \verb+{\c c}+\\
+\hline\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+
+% ---
+\section{Deu pau em algo?}
+% ---
+
+Consulte a FAQ com perguntas frequentes e comuns no portal do \abnTeX:
+\url{https://code.google.com/p/abntex2/wiki/FAQ}.
+
+Inscreva-se no grupo de usuários \LaTeX:
+\url{http://groups.google.com/group/latex-br}, tire suas dúvidas e ajude a galera se tiver tudo certo.
+
+\section*{Motivação}\label{sec:motivacao}
+\addcontentsline{toc}{section}{Motivação}
+
+\lipsum[35]
+
+\section*{Objetivos}\label{sec:objetivos}
+\addcontentsline{toc}{section}{Objetivos}
+
+\lipsum[36]

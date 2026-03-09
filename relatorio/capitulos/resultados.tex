@@ -1,0 +1,23 @@
+\chapter{Resultados}\label{chap:resultados}
+
+A partir dos resultados obtidos, podemos observar que o tamanho de \textit{heap} é um fator importante para o consumo de energia dos \textit{benchmarks}. Analogamente ao \textit{overhead} maior de CPU e tempo \cite{dacapochopin}, quando executando em ambientes com maior restrição de memória, especialmente tamanhos de \textit{heap} menores que 3 vezes o mínimo necessário, o consumo de energia é substancialmente maior. Podemos observar na Figura \ref{fig:lusearch_energy_text} que os tamanhos de \textit{heap} 1x e 2x consistentemente consomem uma quantidade de energia maior para todas as frequências analisadas. Porém, a partir dos tamanhos de \textit{heap} 3x, já não é possível observar melhorias com o aumento da memória disponível. O mesmo fenômeno acontece para o tempo de execução, conforme apresentado na Figura \ref{fig:lusearch_time_text} e nos resultados de \citeonline{dacapochopin}. Isso mostra que a eficiência energética da JVM é ótima a partir de um certo tamanho de \textit{heap}, ou seja, ambientes com maior restrição de memória podem estar sujeitos a um consumo de energia maior.
+
+
+
+\begin{figure}
+   \centering
+   \includegraphics[scale=.5]{figs/lusearch_energy.png}
+   \caption{Consumo de energia do \textit{benchmark} Lusearch}
+   \label{fig:lusearch_energy_text}
+\end{figure}
+
+\begin{figure}
+   \centering
+   \includegraphics[scale=.5]{figs/lusearch_time.png}
+   \caption{Tempo de execução do \textit{benchmark} Lusearch}
+   \label{fig:lusearch_time_text}
+\end{figure}
+
+Os resultados observados corroboram os apresentados por \citeonline{programming_lang_energy} quando comparando diferentes linguagens de programação. Isso é, a melhora no tempo de execução não implica diretamente em uma melhora no consumo de energia. Podemos notar que por volta da faixa de 1600MHz até 2000MHz há uma reversão na tendência do consumo de energia, que volta a aumentar apesar da constante melhora no tempo de execução. Isso indica que, em cenários que o consumo de energia é uma preocupação, os desenvolvedores devem priorizar a eficiência energética ou o tempo de execução.
+
+Os resultados em sua totalidade (para os 16 \textit{benchmarks} executados) podem ser encontrados no apêndice \ref{chap:apendice}.
