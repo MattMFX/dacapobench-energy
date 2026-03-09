@@ -1,23 +1,79 @@
 \chapter{Resultados}\label{chap:resultados}
 
-A partir dos resultados obtidos, podemos observar que o tamanho de \textit{heap} é um fator importante para o consumo de energia dos \textit{benchmarks}. Analogamente ao \textit{overhead} maior de CPU e tempo \cite{dacapochopin}, quando executando em ambientes com maior restrição de memória, especialmente tamanhos de \textit{heap} menores que 3 vezes o mínimo necessário, o consumo de energia é substancialmente maior. Podemos observar na Figura \ref{fig:lusearch_energy_text} que os tamanhos de \textit{heap} 1x e 2x consistentemente consomem uma quantidade de energia maior para todas as frequências analisadas. Porém, a partir dos tamanhos de \textit{heap} 3x, já não é possível observar melhorias com o aumento da memória disponível. O mesmo fenômeno acontece para o tempo de execução, conforme apresentado na Figura \ref{fig:lusearch_time_text} e nos resultados de \citeonline{dacapochopin}. Isso mostra que a eficiência energética da JVM é ótima a partir de um certo tamanho de \textit{heap}, ou seja, ambientes com maior restrição de memória podem estar sujeitos a um consumo de energia maior.
-
-
+A Figura \ref{fig:summary_heatmaps} resume a superfície completa de resultados
+para os 13 \textit{benchmarks} presentes na base consolidada deste relatório.
+Cada célula foi normalizada pelo melhor valor do respectivo \textit{benchmark},
+permitindo comparar tendências sem apagar o comportamento individual de cada
+carga. O padrão mais evidente é o impacto do \textit{heap}: configurações com
+1x e 2x do menor \textit{heap} tendem a ser claramente piores tanto em energia
+quanto em tempo. Considerando todas as medições, a mediana da energia
+normalizada nessas configurações é 2{,}004, enquanto para \textit{heaps} a
+partir de 3x esse valor cai para 1{,}247. Para tempo de execução, a mesma
+comparação produz medianas de 2{,}787 e 1{,}497, respectivamente. Esses
+resultados reforçam a observação de \citeonline{dacapochopin} de que a forte
+restrição de memória impõe um custo significativo à JVM, não apenas em
+desempenho, mas também em consumo energético.
 
 \begin{figure}
    \centering
-   \includegraphics[scale=.5]{figs/lusearch_energy.png}
-   \caption{Consumo de energia do \textit{benchmark} Lusearch}
-   \label{fig:lusearch_energy_text}
+   \includegraphics[width=\textwidth]{figs/summary_heatmaps.png}
+   \caption{Mapas de calor com energia e tempo normalizados por benchmark.}
+   \label{fig:summary_heatmaps}
 \end{figure}
+
+A partir deste ponto, em vez de destacar uma única configuração como
+``melhor'', adota-se um critério mais conservador. Para cada
+\textit{benchmark} e objetivo, considera-se como empate todo conjunto de
+configurações cujo intervalo de confiança de 95\% se sobrepõe ao intervalo da
+configuração com menor média observada. Esse critério não prova equivalência
+estatística formal, mas evita afirmar uma superioridade estrita quando as
+estimativas ainda são compatíveis entre si dentro da incerteza amostral.
+
+A Figura \ref{fig:summary_tie_coverage} resume essa informação de forma mais
+compacta, mostrando a cobertura por \textit{benchmark} das frequências e dos
+tamanhos relativos de \textit{heap} que aparecem nos conjuntos empatados. Em
+vez de apontar um único vencedor, a figura destaca quais frequências e quais
+faixas de memória mais frequentemente pertencem à região compatível com o
+melhor resultado observado. Isso torna a leitura mais robusta: para energia,
+por exemplo, 2{,}0 GHz aparece na região empatada de 12 dos 13
+\textit{benchmarks}, enquanto para tempo 2{,}7 GHz aparece em todos os 13. De
+modo análogo, \textit{heaps} a partir de 3x predominam nos conjuntos empatados
+de todos os objetivos.
 
 \begin{figure}
    \centering
-   \includegraphics[scale=.5]{figs/lusearch_time.png}
-   \caption{Tempo de execução do \textit{benchmark} Lusearch}
-   \label{fig:lusearch_time_text}
+   \includegraphics[width=.9\textwidth]{figs/summary_tie_coverage.png}
+   \caption{Cobertura, por \textit{benchmark}, das frequências e dos \textit{heaps} que pertencem aos conjuntos empatados por sobreposição de intervalos de confiança.}
+   \label{fig:summary_tie_coverage}
 \end{figure}
 
-Os resultados observados corroboram os apresentados por \citeonline{programming_lang_energy} quando comparando diferentes linguagens de programação. Isso é, a melhora no tempo de execução não implica diretamente em uma melhora no consumo de energia. Podemos notar que por volta da faixa de 1600MHz até 2000MHz há uma reversão na tendência do consumo de energia, que volta a aumentar apesar da constante melhora no tempo de execução. Isso indica que, em cenários que o consumo de energia é uma preocupação, os desenvolvedores devem priorizar a eficiência energética ou o tempo de execução.
+Os números agregados reforçam essa interpretação. A mediana do número de
+configurações empatadas foi 8 para energia, 4 para tempo, 7 para EDP e 12 para
+\(EDP^2\). Isso indica que, em muitos casos, a base experimental não sustenta
+uma ordenação fina entre configurações vizinhas, sobretudo para métricas
+derivadas. Ao mesmo tempo, a relação entre energia e tempo continua não sendo
+trivial: apenas 5 dos 13 \textit{benchmarks} apresentaram ao menos uma
+configuração pertencente simultaneamente ao conjunto empatado de energia e ao
+conjunto empatado de tempo, e a mediana dessa interseção foi 0. Em outras
+palavras, mesmo adotando um critério mais permissivo, na maioria dos casos não
+há uma única região que possa ser considerada simultaneamente equivalente para
+ambos os objetivos.
 
-Os resultados em sua totalidade (para os 16 \textit{benchmarks} executados) podem ser encontrados no apêndice \ref{chap:apendice}.
+A Tabela \ref{tab:summary_ties} sintetiza, para cada \textit{benchmark}, o
+tamanho dos conjuntos empatados em energia, tempo, EDP e \(EDP^2\), além do
+número de configurações que pertencem simultaneamente aos conjuntos empatados
+de energia e de tempo. Esse resumo ajuda a distinguir cargas com uma região
+ótima relativamente ampla daquelas em que o compromisso entre energia e
+desempenho continua mais nítido.
+
+\begin{table}[ht]
+    \centering
+    \caption{Tamanho dos conjuntos empatados por \textit{benchmark}.}
+    \label{tab:summary_ties}
+    \small
+    \resizebox{\textwidth}{!}{\input{extras/summary_tie_table.tex}}
+\end{table}
+
+Os resultados completos por \textit{benchmark} permanecem disponíveis nos
+gráficos detalhados gerados para energia, tempo, EDP e \(EDP^2\), podendo ser
+consultados no apêndice \ref{chap:apendice}.
