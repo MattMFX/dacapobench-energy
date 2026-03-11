@@ -1,0 +1,18 @@
+Benchmark,Energy Tied Count,Time Tied Count,EDP Tied Count,EDP2 Tied Count,Energy/Time Overlap Count,Energy/Time Overlap Configs
+avrora,4,4,4,6,0,
+batik,5,3,5,9,0,
+biojava,2,7,2,1,0,
+fop,8,4,7,14,0,
+graphchi,4,3,4,7,0,
+h2,8,3,4,3,0,
+h2o,10,8,8,5,2,2.4GHz / 2.5x; 2.4GHz / 3x
+jme,10,11,14,12,7,2.0GHz / 6x; 2.4GHz / 2x; 2.4GHz / 3x; 2.4GHz / 4x; 2.4GHz / 5x; 2.7GHz / 4x; 2.7GHz / 5x
+jython,4,4,6,14,0,
+luindex,13,20,12,11,9,1.8GHz / 2x; 1.8GHz / 3x; 1.8GHz / 4x; 1.8GHz / 5x; 1.8GHz / 6x; 2.0GHz / 3x; 2.0GHz / 4x; 2.0GHz / 5x; 2.0GHz / 6x
+lusearch,7,3,3,10,0,
+pmd,10,4,5,12,0,
+spring,18,7,13,14,3,2.4GHz / 2x; 2.4GHz / 5x; 2.4GHz / 6x
+sunflow,9,6,11,14,1,2.4GHz / 6x
+tomcat,3,2,4,3,0,
+xalan,6,4,10,16,0,
+zxing,19,14,21,22,11,1.8GHz / 3x; 2.0GHz / 4x; 2.0GHz / 5x; 2.0GHz / 6x; 2.4GHz / 3x; 2.4GHz / 4x; 2.4GHz / 6x; 2.7GHz / 2x; 2.7GHz / 3x; 2.7GHz / 4x; 2.7GHz / 5x
