@@ -1,3 +1,4 @@
+import argparse
 import os
 from pathlib import Path
 
@@ -12,6 +13,9 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 INPUT_FILE = PROJECT_ROOT / 'data' / 'energy_stats.csv'
 RAW_OUTPUT_DIR = PROJECT_ROOT / 'graphs' / 'raw'
 SUMMARY_OUTPUT_DIR = PROJECT_ROOT / 'graphs' / 'summary'
+DEFAULT_INPUT_FILE = str(INPUT_FILE)
+DEFAULT_RAW_OUTPUT_DIR = str(RAW_OUTPUT_DIR)
+DEFAULT_SUMMARY_OUTPUT_DIR = str(SUMMARY_OUTPUT_DIR)
 
 METRIC_SPECS = [
     {
@@ -55,6 +59,58 @@ METRIC_SPECS = [
         'filename_suffix': 'edp2',
     },
 ]
+
+
+def parse_args():
+    """Parses CLI arguments for alternate input/output locations."""
+    parser = argparse.ArgumentParser(
+        description='Generate raw and summary graphs from an aggregated energy stats CSV.'
+    )
+    parser.add_argument(
+        '-i', '--input',
+        default=DEFAULT_INPUT_FILE,
+        metavar='CSV',
+        help=f'Input stats CSV file (default: {DEFAULT_INPUT_FILE})',
+    )
+    parser.add_argument(
+        '--raw-output-dir',
+        default=DEFAULT_RAW_OUTPUT_DIR,
+        metavar='DIR',
+        help=f'Output directory for per-benchmark graphs (default: {DEFAULT_RAW_OUTPUT_DIR})',
+    )
+    parser.add_argument(
+        '--summary-output-dir',
+        default=DEFAULT_SUMMARY_OUTPUT_DIR,
+        metavar='DIR',
+        help=f'Output directory for summary graphs and tables (default: {DEFAULT_SUMMARY_OUTPUT_DIR})',
+    )
+    return parser.parse_args()
+
+
+def resolve_input_path(input_arg):
+    """Resolves alternate input paths while keeping `data/` as a convenient fallback."""
+    input_path = Path(input_arg).expanduser()
+    if input_path.is_absolute():
+        return input_path
+
+    cwd_candidate = input_path.resolve()
+    if cwd_candidate.exists():
+        return cwd_candidate
+
+    project_candidate = (PROJECT_ROOT / input_path).resolve()
+    if project_candidate.exists():
+        return project_candidate
+
+    data_candidate = (PROJECT_ROOT / 'data' / input_path).resolve()
+    if data_candidate.exists():
+        return data_candidate
+
+    return cwd_candidate
+
+
+def resolve_output_dir(output_arg):
+    """Resolves output directories relative to the current working directory."""
+    return Path(output_arg).expanduser().resolve()
 
 
 def parse_heap_size(heap_str):
@@ -139,7 +195,7 @@ def build_heap_order(bench_df):
     return heap_info['Heap Label'].tolist()
 
 
-def generate_benchmark_plots(df):
+def generate_benchmark_plots(df, raw_output_dir):
     """Keeps the detailed per-benchmark plots for appendix use."""
     for benchmark, bench_df in df.groupby('Benchmark'):
         heap_order = build_heap_order(bench_df)
@@ -187,7 +243,7 @@ def generate_benchmark_plots(df):
             plt.grid(True, linestyle='--', alpha=0.7)
             plt.legend(title='Heap Size')
 
-            output_path = RAW_OUTPUT_DIR / f'{benchmark}_{spec["filename_suffix"]}.png'
+            output_path = raw_output_dir / f'{benchmark}_{spec["filename_suffix"]}.png'
             plt.tight_layout()
             plt.savefig(output_path, dpi=200, bbox_inches='tight')
             plt.close()
@@ -227,7 +283,7 @@ def write_latex_table(df, output_path):
         handle.write('\n'.join(lines) + '\n')
 
 
-def build_tie_tables(df):
+def build_tie_tables(df, summary_output_dir):
     """Builds tie-aware summaries using CI overlap with the lowest-mean configuration."""
     tie_rows = []
     objective_rows = []
@@ -404,13 +460,13 @@ def build_tie_tables(df):
         ascending=[True, False, False, True, True],
     ).reset_index(drop=True)
 
-    tie_df.to_csv(SUMMARY_OUTPUT_DIR / 'summary_ties.csv', index=False)
-    objective_df.round(3).to_csv(SUMMARY_OUTPUT_DIR / 'summary_tie_sets.csv', index=False)
+    tie_df.to_csv(summary_output_dir / 'summary_ties.csv', index=False)
+    objective_df.round(3).to_csv(summary_output_dir / 'summary_tie_sets.csv', index=False)
     benchmark_output = benchmark_df.copy()
-    benchmark_output.to_csv(SUMMARY_OUTPUT_DIR / 'summary_tie_benchmarks.csv', index=False)
-    frequency_coverage_df.to_csv(SUMMARY_OUTPUT_DIR / 'summary_tie_frequency_coverage.csv', index=False)
-    heap_coverage_df.to_csv(SUMMARY_OUTPUT_DIR / 'summary_tie_heap_coverage.csv', index=False)
-    config_coverage_df.to_csv(SUMMARY_OUTPUT_DIR / 'summary_tie_top_configs.csv', index=False)
+    benchmark_output.to_csv(summary_output_dir / 'summary_tie_benchmarks.csv', index=False)
+    frequency_coverage_df.to_csv(summary_output_dir / 'summary_tie_frequency_coverage.csv', index=False)
+    heap_coverage_df.to_csv(summary_output_dir / 'summary_tie_heap_coverage.csv', index=False)
+    config_coverage_df.to_csv(summary_output_dir / 'summary_tie_top_configs.csv', index=False)
     compact_table = benchmark_output[
         [
             'Benchmark',
@@ -421,13 +477,13 @@ def build_tie_tables(df):
             'Energy/Time Overlap Count',
         ]
     ]
-    write_latex_table(compact_table, SUMMARY_OUTPUT_DIR / 'summary_tie_table.tex')
-    overall_df.round(3).to_csv(SUMMARY_OUTPUT_DIR / 'summary_overall_stats.csv', index=False)
+    write_latex_table(compact_table, summary_output_dir / 'summary_tie_table.tex')
+    overall_df.round(3).to_csv(summary_output_dir / 'summary_overall_stats.csv', index=False)
 
     return tie_df, objective_df, benchmark_df, frequency_coverage_df, heap_coverage_df, config_coverage_df
 
 
-def generate_summary_heatmaps(df):
+def generate_summary_heatmaps(df, summary_output_dir):
     """Shows the full benchmark x configuration surface in two figures."""
     heatmap_specs = [
         ('energy_norm', 'Normalized package energy'),
@@ -481,13 +537,13 @@ def generate_summary_heatmaps(df):
         ha='center',
         fontsize=10,
     )
-    output_path = SUMMARY_OUTPUT_DIR / 'summary_heatmaps.png'
+    output_path = summary_output_dir / 'summary_heatmaps.png'
     fig.savefig(output_path, dpi=200, bbox_inches='tight')
     plt.close(fig)
     print(f"Generated {output_path}")
 
 
-def generate_tie_coverage_plot(frequency_coverage_df, heap_coverage_df):
+def generate_tie_coverage_plot(frequency_coverage_df, heap_coverage_df, summary_output_dir):
     """Shows distinct-benchmark coverage by frequency and by heap."""
     objective_order = ['Energy', 'Time', 'EDP', 'EDP2']
     freq_labels = (
@@ -544,30 +600,39 @@ def generate_tie_coverage_plot(frequency_coverage_df, heap_coverage_df):
     axes[1].tick_params(axis='x', rotation=0)
     axes[1].tick_params(axis='y', rotation=0)
 
-    output_path = SUMMARY_OUTPUT_DIR / 'summary_tie_coverage.png'
+    output_path = summary_output_dir / 'summary_tie_coverage.png'
     fig.savefig(output_path, dpi=200, bbox_inches='tight')
     plt.close(fig)
     print(f"Generated {output_path}")
 
 
 def main():
-    os.makedirs(RAW_OUTPUT_DIR, exist_ok=True)
-    os.makedirs(SUMMARY_OUTPUT_DIR, exist_ok=True)
+    args = parse_args()
+    input_file = resolve_input_path(args.input)
+    raw_output_dir = resolve_output_dir(args.raw_output_dir)
+    summary_output_dir = resolve_output_dir(args.summary_output_dir)
+
+    os.makedirs(raw_output_dir, exist_ok=True)
+    os.makedirs(summary_output_dir, exist_ok=True)
 
     try:
-        df = pd.read_csv(INPUT_FILE)
+        df = pd.read_csv(input_file)
     except FileNotFoundError:
-        print(f"Error: File {INPUT_FILE} not found.")
+        print(f"Error: File {input_file} not found.")
         return
 
     df = prepare_dataframe(df)
-    generate_benchmark_plots(df)
-    tie_df, objective_df, benchmark_df, frequency_coverage_df, heap_coverage_df, config_coverage_df = build_tie_tables(df)
-    generate_summary_heatmaps(df)
-    generate_tie_coverage_plot(frequency_coverage_df, heap_coverage_df)
+    generate_benchmark_plots(df, raw_output_dir)
+    tie_df, objective_df, benchmark_df, frequency_coverage_df, heap_coverage_df, config_coverage_df = build_tie_tables(
+        df,
+        summary_output_dir,
+    )
+    generate_summary_heatmaps(df, summary_output_dir)
+    generate_tie_coverage_plot(frequency_coverage_df, heap_coverage_df, summary_output_dir)
 
     print(f"Generated {len(benchmark_df)} benchmark tie summaries")
-    print(f"\nAll graphs generated in {PROJECT_ROOT / 'graphs'}")
+    print(f"Raw graphs written to {raw_output_dir}")
+    print(f"Summary outputs written to {summary_output_dir}")
 
 
 if __name__ == "__main__":

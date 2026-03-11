@@ -1,6 +1,4 @@
 import argparse
-import os
-
 import pandas as pd
 import numpy as np
 from scipy.stats import bootstrap
@@ -10,6 +8,8 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 INPUT_FILE = PROJECT_ROOT / 'data' / 'energy.csv'
 OUTPUT_FILE = PROJECT_ROOT / 'data' / 'energy_stats.csv'
+DEFAULT_INPUT_FILE = str(INPUT_FILE)
+DEFAULT_OUTPUT_FILE = str(OUTPUT_FILE)
 N_BOOTSTRAP = 1000
 CONFIDENCE = 0.95
 
@@ -26,15 +26,11 @@ def parse_args():
     )
     parser.add_argument(
         '-o', '--output',
-        default=None,
+        default=DEFAULT_OUTPUT_FILE,
         metavar='CSV',
-        help='Output stats CSV file (default: input name with _stats suffix, e.g. energy_stats.csv)',
+        help=f'Output stats CSV file (default: {DEFAULT_OUTPUT_FILE})',
     )
-    args = parser.parse_args()
-    if args.output is None:
-        base, ext = os.path.splitext(args.input)
-        args.output = base + '_stats' + (ext or '.csv')
-    return args
+    return parser.parse_args()
 
 def get_ci(data):
     """Calculates the confidence interval of the mean using bootstrap."""
