@@ -3,10 +3,6 @@ avrora,EDP,2.7GHz / 3x,20.549,19.638,21.386,7,"2.4GHz, 2.7GHz","2x, 3x, 4x, 5x, 
 avrora,EDP2,2.4GHz / 4x,215.514,201.475,226.779,12,"2.0GHz, 2.4GHz, 2.7GHz","2x, 3x, 4x, 5x, 6x",2.0GHz / 3x; 2.0GHz / 6x; 2.4GHz / 2x; 2.4GHz / 3x; 2.4GHz / 4x; 2.4GHz / 5x; 2.4GHz / 6x; 2.7GHz / 2x; 2.7GHz / 3x; 2.7GHz / 4x; 2.7GHz / 5x; 2.7GHz / 6x
 avrora,Energy,1.6GHz / 4x,9.149,8.979,9.272,8,"1.6GHz, 2.0GHz","2x, 3x, 4x, 5x, 6x",1.6GHz / 2x; 1.6GHz / 3x; 1.6GHz / 4x; 1.6GHz / 5x; 1.6GHz / 6x; 2.0GHz / 2x; 2.0GHz / 3x; 2.0GHz / 6x
 avrora,Time,2.7GHz / 3x,1958.5,1915.9,1995.302,5,2.7GHz,"2x, 3x, 4x, 5x, 6x",2.7GHz / 2x; 2.7GHz / 3x; 2.7GHz / 4x; 2.7GHz / 5x; 2.7GHz / 6x
-batik,EDP,2.4GHz / 2.5x,0.875,0.731,1.031,6,"2.0GHz, 2.4GHz, 2.7GHz","2.5x, 3x",2.0GHz / 2.5x; 2.0GHz / 3x; 2.4GHz / 2.5x; 2.4GHz / 3x; 2.7GHz / 2.5x; 2.7GHz / 3x
-batik,EDP2,2.4GHz / 2.5x,1.804,1.329,2.275,7,"1.6GHz, 2.0GHz, 2.4GHz, 2.7GHz","2.5x, 3x",1.6GHz / 2.5x; 2.0GHz / 2.5x; 2.0GHz / 3x; 2.4GHz / 2.5x; 2.4GHz / 3x; 2.7GHz / 2.5x; 2.7GHz / 3x
-batik,Energy,1.6GHz / 2.5x,1.962,1.716,2.168,10,"1.2GHz, 1.6GHz, 2.0GHz, 2.4GHz, 2.7GHz","2.5x, 3x",1.2GHz / 2.5x; 1.2GHz / 3x; 1.6GHz / 2.5x; 1.6GHz / 3x; 2.0GHz / 2.5x; 2.0GHz / 3x; 2.4GHz / 2.5x; 2.4GHz / 3x; 2.7GHz / 2.5x; 2.7GHz / 3x
-batik,Time,2.7GHz / 3x,412.5,375.78,458.3,3,"2.4GHz, 2.7GHz","2.5x, 3x",2.4GHz / 2.5x; 2.7GHz / 2.5x; 2.7GHz / 3x
 biojava,EDP,2.4GHz / 4x,0.113,0.103,0.128,11,"2.0GHz, 2.4GHz, 2.7GHz","2x, 3x, 4x, 5x, 6x",2.0GHz / 4x; 2.0GHz / 5x; 2.0GHz / 6x; 2.4GHz / 2x; 2.4GHz / 3x; 2.4GHz / 4x; 2.4GHz / 6x; 2.7GHz / 2x; 2.7GHz / 4x; 2.7GHz / 5x; 2.7GHz / 6x
 biojava,EDP2,2.4GHz / 4x,0.086,0.074,0.105,15,"1.6GHz, 2.0GHz, 2.4GHz, 2.7GHz","2x, 3x, 4x, 5x, 6x",1.6GHz / 5x; 1.6GHz / 6x; 2.0GHz / 2x; 2.0GHz / 3x; 2.0GHz / 4x; 2.0GHz / 5x; 2.0GHz / 6x; 2.4GHz / 2x; 2.4GHz / 3x; 2.4GHz / 4x; 2.4GHz / 6x; 2.7GHz / 2x; 2.7GHz / 4x; 2.7GHz / 5x; 2.7GHz / 6x
 biojava,Energy,2.0GHz / 4x,0.7,0.663,0.754,11,"1.6GHz, 2.0GHz, 2.4GHz","2x, 3x, 4x, 5x, 6x",1.6GHz / 2x; 1.6GHz / 3x; 1.6GHz / 4x; 1.6GHz / 5x; 1.6GHz / 6x; 2.0GHz / 2x; 2.0GHz / 3x; 2.0GHz / 4x; 2.0GHz / 5x; 2.0GHz / 6x; 2.4GHz / 4x
@@ -15,14 +11,6 @@ fop,EDP,2.0GHz / 6x,0.126,0.112,0.141,12,"2.0GHz, 2.4GHz, 2.7GHz","2x, 3x, 4x, 5
 fop,EDP2,2.0GHz / 6x,0.087,0.072,0.102,9,"1.6GHz, 2.0GHz, 2.4GHz, 2.7GHz","2x, 4x, 5x, 6x",1.6GHz / 4x; 2.0GHz / 2x; 2.0GHz / 4x; 2.0GHz / 5x; 2.0GHz / 6x; 2.4GHz / 4x; 2.4GHz / 5x; 2.4GHz / 6x; 2.7GHz / 4x
 fop,Energy,1.6GHz / 4x,0.682,0.649,0.712,6,"1.6GHz, 2.0GHz","2x, 3x, 4x, 5x, 6x",1.6GHz / 3x; 1.6GHz / 4x; 1.6GHz / 5x; 1.6GHz / 6x; 2.0GHz / 2x; 2.0GHz / 6x
 fop,Time,2.7GHz / 4x,159.3,146.795,172.808,11,"2.0GHz, 2.4GHz, 2.7GHz","2x, 3x, 4x, 5x, 6x",2.0GHz / 6x; 2.4GHz / 2x; 2.4GHz / 3x; 2.4GHz / 4x; 2.4GHz / 5x; 2.4GHz / 6x; 2.7GHz / 2x; 2.7GHz / 3x; 2.7GHz / 4x; 2.7GHz / 5x; 2.7GHz / 6x
-graphchi,EDP,2.7GHz / 1.5x,3.165,3.14,3.19,2,2.7GHz,"1x, 1.5x",2.7GHz / 1x; 2.7GHz / 1.5x
-graphchi,EDP2,2.4GHz / 1.5x,12.461,12.245,12.694,4,"2.4GHz, 2.7GHz","1x, 1.5x",2.4GHz / 1x; 2.4GHz / 1.5x; 2.7GHz / 1x; 2.7GHz / 1.5x
-graphchi,Energy,1.6GHz / 1.5x,3.524,3.503,3.55,4,"1.6GHz, 2.0GHz","1x, 1.5x",1.6GHz / 1x; 1.6GHz / 1.5x; 2.0GHz / 1x; 2.0GHz / 1.5x
-graphchi,Time,2.7GHz / 1.5x,798.9,796.0,801.4,2,2.7GHz,"1x, 1.5x",2.7GHz / 1x; 2.7GHz / 1.5x
-h2,EDP,2.4GHz / 2.5x,0.486,0.379,0.56,10,"2.0GHz, 2.4GHz, 2.7GHz","1x, 1.5x, 2x, 2.5x, 3x",2.0GHz / 2x; 2.4GHz / 1x; 2.4GHz / 1.5x; 2.4GHz / 2x; 2.4GHz / 2.5x; 2.7GHz / 1x; 2.7GHz / 1.5x; 2.7GHz / 2x; 2.7GHz / 2.5x; 2.7GHz / 3x
-h2,EDP2,2.4GHz / 2.5x,0.769,0.557,0.924,12,"1.6GHz, 2.0GHz, 2.4GHz, 2.7GHz","1x, 1.5x, 2x, 2.5x, 3x",1.6GHz / 2.5x; 2.0GHz / 1x; 2.0GHz / 2x; 2.4GHz / 1x; 2.4GHz / 1.5x; 2.4GHz / 2x; 2.4GHz / 2.5x; 2.4GHz / 3x; 2.7GHz / 1x; 2.7GHz / 2x; 2.7GHz / 2.5x; 2.7GHz / 3x
-h2,Energy,2.0GHz / 2x,1.426,1.302,1.531,10,"1.6GHz, 2.0GHz, 2.4GHz","1x, 1.5x, 2x, 2.5x, 3x",1.6GHz / 1x; 1.6GHz / 1.5x; 1.6GHz / 2x; 1.6GHz / 2.5x; 2.0GHz / 1x; 2.0GHz / 2x; 2.0GHz / 2.5x; 2.0GHz / 3x; 2.4GHz / 1.5x; 2.4GHz / 2.5x
-h2,Time,2.7GHz / 3x,300.3,290.698,311.402,7,"2.4GHz, 2.7GHz","1x, 1.5x, 2x, 2.5x, 3x",2.4GHz / 1.5x; 2.4GHz / 2.5x; 2.7GHz / 1x; 2.7GHz / 1.5x; 2.7GHz / 2x; 2.7GHz / 2.5x; 2.7GHz / 3x
 h2o,EDP,2.7GHz / 4x,4.349,4.195,4.478,3,2.7GHz,"4x, 5x, 6x",2.7GHz / 4x; 2.7GHz / 5x; 2.7GHz / 6x
 h2o,EDP2,2.7GHz / 4x,21.809,20.597,22.772,7,"2.0GHz, 2.4GHz, 2.7GHz","3x, 4x, 5x, 6x",2.0GHz / 5x; 2.0GHz / 6x; 2.4GHz / 3x; 2.4GHz / 4x; 2.7GHz / 4x; 2.7GHz / 5x; 2.7GHz / 6x
 h2o,Energy,1.6GHz / 4x,4.42,4.289,4.558,9,"1.6GHz, 2.0GHz","2x, 3x, 4x, 5x, 6x",1.6GHz / 2x; 1.6GHz / 3x; 1.6GHz / 4x; 1.6GHz / 5x; 1.6GHz / 6x; 2.0GHz / 2x; 2.0GHz / 3x; 2.0GHz / 5x; 2.0GHz / 6x

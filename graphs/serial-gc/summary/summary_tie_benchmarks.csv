@@ -1,10 +1,7 @@
 Benchmark,Energy Tied Count,Time Tied Count,EDP Tied Count,EDP2 Tied Count,Energy/Time Overlap Count,Energy/Time Overlap Configs
 avrora,8,5,7,12,0,
-batik,10,3,6,7,3,2.4GHz / 2.5x; 2.7GHz / 2.5x; 2.7GHz / 3x
 biojava,11,5,11,15,1,2.4GHz / 4x
 fop,6,11,12,9,1,2.0GHz / 6x
-graphchi,4,2,2,4,0,
-h2,10,7,10,12,2,2.4GHz / 1.5x; 2.4GHz / 2.5x
 h2o,9,3,3,7,0,
 jme,19,13,17,18,8,2.0GHz / 3x; 2.0GHz / 5x; 2.0GHz / 6x; 2.4GHz / 2x; 2.4GHz / 4x; 2.4GHz / 5x; 2.4GHz / 6x; 2.7GHz / 6x
 jython,6,3,5,9,0,
