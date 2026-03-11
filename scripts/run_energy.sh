@@ -16,6 +16,7 @@
 #                       'zgc', or 'shenandoah', depending on JVM support).
 #   -j <java_bin>     : optional path or command name for the Java binary to use
 #                       (e.g., /usr/lib/jvm/java-17/bin/java). Defaults to 'java'.
+#   -o <csv_file>     : optional output CSV filename for energy data. Defaults to 'energy.csv'.
 #   -h                : show this help message and exit.
 
 # Colors for pretty printing
@@ -32,7 +33,7 @@ DATA_DIR="${PROJECT_ROOT}/data"
 ENERGY_CSV_PATH="${DATA_DIR}/energy.csv"
 
 usage() {
-  echo "Usage: $0 -b <benchmark> -r <runs> [-s heap_size] [-F cpu_freq_mhz] [-g gc] [-j java_bin]"
+  echo "Usage: $0 -b <benchmark> -r <runs> [-s heap_size] [-F cpu_freq_mhz] [-g gc] [-j java_bin] [-o csv_file]"
   echo
   echo "  -b <benchmark>    DaCapo benchmark name (e.g., lusearch, batik, eclipse, ...)"
   echo "  -r <runs>         Number of times to repeat the benchmark"
@@ -41,6 +42,7 @@ usage() {
   echo "                    Uses cpupower to set both min and max frequency."
   echo "  -g <gc>           Optional garbage collector: serial, parallel, g1, zgc, shenandoah."
   echo "  -j <java_bin>     Optional Java binary to use (path or command name)."
+  echo "  -o <csv_file>     Optional output CSV filename for energy data (default: energy.csv)."
   echo "  -h                Show this help message and exit."
 }
 
@@ -50,8 +52,9 @@ HEAP_SIZE=""
 CPU_FREQ=""
 JAVA_BIN_ARG=""
 GC_CHOICE=""
+CSV_OUTPUT="energy.csv"
 
-while getopts ":b:r:s:F:g:j:h" opt; do
+while getopts ":b:r:s:F:g:j:o:h" opt; do
   case "$opt" in
     b) BENCHMARK="$OPTARG" ;;
     r) RUNS="$OPTARG" ;;
@@ -59,6 +62,7 @@ while getopts ":b:r:s:F:g:j:h" opt; do
     F) CPU_FREQ="$OPTARG" ;;
     g) GC_CHOICE="$OPTARG" ;;
     j) JAVA_BIN_ARG="$OPTARG" ;;
+    o) CSV_OUTPUT="$OPTARG" ;;
     h)
       usage
       exit 0

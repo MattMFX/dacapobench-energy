@@ -1,3 +1,6 @@
+import argparse
+import os
+
 import pandas as pd
 import numpy as np
 from scipy.stats import bootstrap
@@ -10,6 +13,29 @@ OUTPUT_FILE = PROJECT_ROOT / 'data' / 'energy_stats.csv'
 N_BOOTSTRAP = 1000
 CONFIDENCE = 0.95
 
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description='Process energy benchmark CSV and compute statistics (mean, CI).'
+    )
+    parser.add_argument(
+        '-i', '--input',
+        default=DEFAULT_INPUT_FILE,
+        metavar='CSV',
+        help=f'Input energy CSV file (default: {DEFAULT_INPUT_FILE})',
+    )
+    parser.add_argument(
+        '-o', '--output',
+        default=None,
+        metavar='CSV',
+        help='Output stats CSV file (default: input name with _stats suffix, e.g. energy_stats.csv)',
+    )
+    args = parser.parse_args()
+    if args.output is None:
+        base, ext = os.path.splitext(args.input)
+        args.output = base + '_stats' + (ext or '.csv')
+    return args
+
 def get_ci(data):
     """Calculates the confidence interval of the mean using bootstrap."""
     if len(data) < 2:
@@ -19,11 +45,15 @@ def get_ci(data):
     return pd.Series([data.mean(), res.confidence_interval.low, res.confidence_interval.high], index=['mean', 'ci_low', 'ci_high'])
 
 def main():
+    args = parse_args()
+    input_file = args.input
+    output_file = args.output
+
     try:
         # Load data
-        df = pd.read_csv(INPUT_FILE)
+        df = pd.read_csv(input_file)
     except FileNotFoundError:
-        print(f"Error: File {INPUT_FILE} not found.")
+        print(f"Error: File {input_file} not found.")
         return
 
     # Filter warmup = false
@@ -128,8 +158,8 @@ def main():
     result_df = result_df[columns_order]
 
     # Write to CSV
-    result_df.to_csv(OUTPUT_FILE, index=False)
-    print(f"Successfully created {OUTPUT_FILE}")
+    result_df.to_csv(output_file, index=False)
+    print(f"Successfully created {output_file}")
 
 if __name__ == "__main__":
     main()
