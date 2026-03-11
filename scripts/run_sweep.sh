@@ -22,28 +22,28 @@ OUTPUT_CSV="${OUTPUT_CSV:-energy.csv}"
 
 # Benchmarks to run (DaCapo names)
 BENCHMARKS=(
-  "biojava"
-  "h2o"
-  "jython"
-  "xalan"
+  # "biojava"
+  # "h2o"
+  # "jython"
+  # "xalan"
   "h2"
-  "luindex"
+  # "luindex"
   "graphchi"
   "batik"
-  "sunflow"
-  "zxing"
-  "jme"
-  "pmd"
-  # "tradebeans"
-  "fop"
-  "spring"
-  # "cassandra"
-  # "eclipse"
-  # "tradesoap"
-  "lusearch"
-  # "kafka"
-  "avrora"
-  # "tomcat"
+  # "sunflow"
+  # "zxing"
+  # "jme"
+  # "pmd"
+  # "tradebeans" # DESCONSIDERADO POR ERRO
+  # "fop"
+  # "spring"
+  # "cassandra" # DESCONSIDERADO POR ERRO
+  # "eclipse" # DESCONSIDERADO POR ERRO
+  # "tradesoap" # DESCONSIDERADO POR ERRO
+  # "lusearch"
+  # "kafka" # DESCONSIDERADO POR ERRO
+  # "avrora"
+  # "tomcat" # DESCONSIDERADO POR ERRO
 )
 
 # Number of iterations per benchmark invocation (passed as -r)
