@@ -30,7 +30,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 BENCHMARKS_DIR="${PROJECT_ROOT}/benchmarks"
 DATA_DIR="${PROJECT_ROOT}/data"
-ENERGY_CSV_PATH="${DATA_DIR}/energy.csv"
+ENERGY_CSV_PATH=""  # resolved after arg parsing
 
 usage() {
   echo "Usage: $0 -b <benchmark> -r <runs> [-s heap_size] [-F cpu_freq_mhz] [-g gc] [-j java_bin] [-o csv_file]"
@@ -81,6 +81,8 @@ while getopts ":b:r:s:F:g:j:o:h" opt; do
 done
 
 shift $((OPTIND - 1))
+
+ENERGY_CSV_PATH="${DATA_DIR}/${CSV_OUTPUT}"
 
 if [ -z "$BENCHMARK" ] || [ -z "$RUNS" ]; then
   echo -e "${RED}Error: both -b <benchmark> and -r <runs> are required.${NC}"
