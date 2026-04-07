@@ -1,1 +1,41 @@
 \chapter{Conclusão}
+
+Este trabalho teve como objetivo analisar o consumo de energia da Java Virtual
+Machine (JVM) por meio de um conjunto diversificado de \textit{benchmarks},
+considerando separadamente energia e tempo de execução. Para isso, foi
+desenvolvida uma extensão ao DaCapo Chopin \cite{dacapochopin} capaz de
+coletar medições energéticas com o apoio do JRAPL \cite{jrapl}, o que tornou
+possível integrar à execução dos \textit{benchmarks} métricas que não
+estão presentes originalmente. Essa extensão constitui uma das
+principais contribuições do trabalho, pois amplia o uso do DaCapo como
+ferramenta para estudos de eficiência energética na JVM.
+
+Os resultados obtidos mostram que consumo de energia e tempo de execução, ainda
+que relacionados, não se comportam de forma equivalente. De modo geral, as
+configurações de menor tempo concentram-se nas frequências mais altas do
+processador, enquanto as menores energias tendem a surgir em frequências
+intermediárias. Além disso, \textit{heaps} maiores que o mínimo necessário,
+especialmente a partir de \(4\times\), aparecem com frequência
+entre as configurações mais competitivas. Esses resultados reforçam a hipótese
+inicial do trabalho e estão de acordo com a literatura que aponta que tempo e
+energia não devem ser tratados como métricas intercambiáveis \cite{programming_lang_energy}, 
+elas merecem ser tratadas separadamente e consideradas de forma conjunta na análise de 
+desempenho.
+
+Outro aspecto importante observado ao longo da análise é que o comportamento
+energético da JVM depende da interação entre a carga de trabalho e as escolhas
+de configuração. Não foi identificada uma única combinação de frequência e
+\textit{heap} capaz de se destacar de forma uniforme para todos os
+\textit{benchmarks}. Em vez disso, diferentes aplicações respondem de maneira
+distinta às mesmas alterações, o que indica que estratégias de ajuste da JVM
+baseadas em parâmetros fixos tendem a ser insuficientes quando o objetivo é
+otimizar eficiência energética sem comprometer o desempenho.
+
+Os resultados apresentados são consistentes com o objetivo proposto, porém o escopo do
+estudo ainda apresenta limitações. As medições foram realizadas em um único 
+\textit{hardware}, com uma única versão da JVM e um conjunto
+controlado de configurações experimentais. Além disso, parte dos
+\textit{benchmarks} do DaCapo Chopin não pôde ser incorporada à análise em
+virtude de problemas na execução. Assim, se mostra necessário realizar essa 
+análise caso a caso, considerando as características de cada aplicação e 
+ambiente de execução.

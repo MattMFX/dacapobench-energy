@@ -1,79 +1,139 @@
-\chapter{Resultados}\label{chap:resultados}
+\chapter{Resultados}
+\label{chap:resultados}
 
-A Figura \ref{fig:summary_heatmaps} resume a superfície completa de resultados
-para os 13 \textit{benchmarks} presentes na base consolidada deste relatório.
-Cada célula foi normalizada pelo melhor valor do respectivo \textit{benchmark},
-permitindo comparar tendências sem apagar o comportamento individual de cada
-carga. O padrão mais evidente é o impacto do \textit{heap}: configurações com
-1x e 2x do menor \textit{heap} tendem a ser claramente piores tanto em energia
-quanto em tempo. Considerando todas as medições, a mediana da energia
-normalizada nessas configurações é 2{,}004, enquanto para \textit{heaps} a
-partir de 3x esse valor cai para 1{,}247. Para tempo de execução, a mesma
-comparação produz medianas de 2{,}787 e 1{,}497, respectivamente. Esses
-resultados reforçam a observação de \citeonline{dacapochopin} de que a forte
-restrição de memória impõe um custo significativo à JVM, não apenas em
-desempenho, mas também em consumo energético.
+Este capítulo apresenta uma síntese dos resultados obtidos a partir da execução 
+dos \textit{benchmarks} do DaCapo Chopin \cite{dacapochopin}, instrumentada com o JRAPL
+\cite{jrapl}. A análise considera a energia do pacote e o tempo de execução,
+além das métricas derivadas EDP e \(EDP^2\), que combinam energia e desempenho
+em uma mesma medida. Os resultados são apresentados de forma
+agregada por frequência do processador e por múltiplos relativos de
+\textit{heap}, permitindo observar tendências gerais comuns aos
+\textit{benchmarks} avaliados.
 
-\begin{figure}
-   \centering
-   \includegraphics[width=\textwidth]{figs/summary_heatmaps.png}
-   \caption{Mapas de calor com energia e tempo normalizados por benchmark.}
-   \label{fig:summary_heatmaps}
-\end{figure}
+\section{Visão geral}
 
-A partir deste ponto, em vez de destacar uma única configuração como
-``melhor'', adota-se um critério mais conservador. Para cada
-\textit{benchmark} e objetivo, considera-se como empate todo conjunto de
-configurações cujo intervalo de confiança de 95\% se sobrepõe ao intervalo da
-configuração com menor média observada. Esse critério não prova equivalência
-estatística formal, mas evita afirmar uma superioridade estrita quando as
-estimativas ainda são compatíveis entre si dentro da incerteza amostral.
+A Figura \ref{fig:summary_heatmaps_serial_gc} apresenta, para cada
+\textit{benchmark}, a energia e o tempo normalizados pela melhor configuração
+observada para aquele mesmo \textit{benchmark}. Dessa forma, valores próximos de 1 indicam
+configurações competitivas, enquanto valores mais altos indicam perda relativa
+em comparação com o melhor resultado obtido para o \textit{benchmark}.
 
-A Figura \ref{fig:summary_tie_coverage} resume essa informação de forma mais
-compacta, mostrando a cobertura por \textit{benchmark} das frequências e dos
-tamanhos relativos de \textit{heap} que aparecem nos conjuntos empatados. Em
-vez de apontar um único vencedor, a figura destaca quais frequências e quais
-faixas de memória mais frequentemente pertencem à região compatível com o
-melhor resultado observado. Isso torna a leitura mais robusta: para energia,
-por exemplo, 2{,}0 GHz aparece na região empatada de 12 dos 13
-\textit{benchmarks}, enquanto para tempo 2{,}7 GHz aparece em todos os 13. De
-modo análogo, \textit{heaps} a partir de 3x predominam nos conjuntos empatados
-de todos os objetivos.
-
-\begin{figure}
-   \centering
-   \includegraphics[width=.9\textwidth]{figs/summary_tie_coverage.png}
-   \caption{Cobertura, por \textit{benchmark}, das frequências e dos \textit{heaps} que pertencem aos conjuntos empatados por sobreposição de intervalos de confiança.}
-   \label{fig:summary_tie_coverage}
-\end{figure}
-
-Os números agregados reforçam essa interpretação. A mediana do número de
-configurações empatadas foi 8 para energia, 4 para tempo, 7 para EDP e 12 para
-\(EDP^2\). Isso indica que, em muitos casos, a base experimental não sustenta
-uma ordenação fina entre configurações vizinhas, sobretudo para métricas
-derivadas. Ao mesmo tempo, a relação entre energia e tempo continua não sendo
-trivial: apenas 5 dos 13 \textit{benchmarks} apresentaram ao menos uma
-configuração pertencente simultaneamente ao conjunto empatado de energia e ao
-conjunto empatado de tempo, e a mediana dessa interseção foi 0. Em outras
-palavras, mesmo adotando um critério mais permissivo, na maioria dos casos não
-há uma única região que possa ser considerada simultaneamente equivalente para
-ambos os objetivos.
-
-A Tabela \ref{tab:summary_ties} sintetiza, para cada \textit{benchmark}, o
-tamanho dos conjuntos empatados em energia, tempo, EDP e \(EDP^2\), além do
-número de configurações que pertencem simultaneamente aos conjuntos empatados
-de energia e de tempo. Esse resumo ajuda a distinguir cargas com uma região
-ótima relativamente ampla daquelas em que o compromisso entre energia e
-desempenho continua mais nítido.
-
-\begin{table}[ht]
+\begin{figure}[htbp]
     \centering
-    \caption{Tamanho dos conjuntos empatados por \textit{benchmark}.}
-    \label{tab:summary_ties}
-    \small
-    \resizebox{\textwidth}{!}{\input{extras/summary_tie_table.tex}}
-\end{table}
+    \includegraphics[width=\textwidth]{figs/summary_heatmaps_serial_gc.png}
+    \caption{Mapa de calor com energia e tempo normalizados para todos os
+    \textit{benchmarks}, frequências e múltiplos de \textit{heap}
+    considerados nesta análise.}
+    \label{fig:summary_heatmaps_serial_gc}
+\end{figure}
 
-Os resultados completos por \textit{benchmark} permanecem disponíveis nos
-gráficos detalhados gerados para energia, tempo, EDP e \(EDP^2\), podendo ser
-consultados no apêndice \ref{chap:apendice}.
+Observa-se, inicialmente, que as frequências mais baixas, em especial
+400 MHz e 800 MHz, aparecem com frequência fora da região de melhor
+desempenho tanto para energia quanto para tempo. Isso indica
+que, no conjunto avaliado, faixas de frequência mais baixas do processador
+resultam no aumento do tempo de execução em proporção maior do que a eventual 
+economia de energia obtida. Isso acontece porque o escalonamento de frequência 
+do processador somente afeta a energia consumida pela CPU. A energia consumida 
+por outros componentes do sistema não é afetada. Sendo assim, o ganho energético 
+obtido com a redução da potência do processador é compensado pelo aumento do 
+tempo de execução. Isso mostra as limitações do escalonamento de frequência, 
+já que a partir de um certo limite, a diminuição da frequência do processador 
+prejudica tanto o tempo de execução quanto a energia consumida \cite{jrapl}.
+
+Por outro lado, as menores energias tendem a se concentrar em frequências
+intermediárias, principalmente entre 1{,}6 GHz e 2{,}0 GHz, enquanto os menores
+tempos se deslocam para a faixa superior, entre 2{,}4 GHz e 2{,}7 GHz. Essa
+separação entre a região de menor consumo energético e a região de melhor
+desempenho reforça que minimizar o tempo de execução não é equivalente a
+minimizar o consumo de energia, resultado compatível com a discussão de
+\citeonline{programming_lang_energy}. O resultado mostra que, para as faixas 
+de frequência analisadas, o aumento da frequência do processador quase sempre 
+resulta em uma redução no tempo de execução. No entanto, o consumo de energia 
+tem uma faixa de frequência ótima, a partir da qual o aumento de frequência 
+é prejudicial para o desempenho. Essa divergência reforça a necessidade de 
+considerar essas duas métricas no processo de desenvolvimento de \textit{software} 
+e pesquisa.
+
+Podemos notar que \textit{heaps} pequenos concentram a maior parte das
+configurações menos favoráveis. Considerando os valores normalizados,
+a mediana da energia passa de 1{,}677 para 1{,}196 ao se comparar o grupo de
+\textit{heaps} de \(2\times\) com o grupo de \textit{heaps} de 
+\(3\times\). Para o tempo de execução, a diferença é ainda mais acentuada,
+com redução da mediana de 2{,}696 para 1{,}676. Isso indica que o
+aumento do espaço de memória disponível para a JVM tende a reduzir tanto a
+penalidade energética quanto a penalidade temporal em relação ao melhor caso de
+cada \textit{benchmark}. Vale notar que \textit{heaps} muito restritos (próximos 
+do mínimo necessário) penalizam fortemente as duas métricas, sendo o fator mais 
+relevante no desempenho, já que nem mesmo para as frequências mais altas essa 
+configuração de \textit{heap} é competitiva.
+
+\section{Otimização de energia e tempo}
+
+Para complementar a leitura dos mapas de calor, a
+Figura \ref{fig:summary_table_serial_gc} mostra quantos \textit{benchmarks}
+incluem cada frequência e cada múltiplo de \textit{heap} no conjunto de
+configurações estatisticamente empatadas com a melhor média, considerando a
+sobreposição dos intervalos de confiança de 95\%. Ou seja, para cada uma dessas 
+configurações, a média de energia ou tempo é estatisticamente igual à melhor média 
+observada para o \textit{benchmark}. A tabela que mostra as diferentes frequências 
+não inclui as frequências de 400MHz e 800MHz, pois nenhum \textit{benchmark} 
+apresentou uma configuração com essas frequências que fosse estatisticamente 
+igual à melhor média observada.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figs/summary_table_serial_gc.png}
+    \caption{Possíveis configurações ótimas para cada \textit{benchmark}, 
+    considerando a sobreposição dos intervalos de confiança de 95\%.}
+    \label{fig:summary_table_serial_gc}
+\end{figure}
+
+Para energia, as frequências de 1{,}6 GHz e 2{,}0 GHz aparecem em 13 dos 13
+\textit{benchmarks} analisados, enquanto 2{,}7 GHz aparece em apenas 2. Isso
+reforça a interpretação de que a melhor eficiência energética tende a surgir em
+frequências intermediárias. Já para tempo, a situação se inverte: 2{,}7 GHz
+cobre todos os 13 \textit{benchmarks}, ao passo que frequências menores têm
+cobertura muito inferior. Portanto, quando o objetivo principal é otimizar o 
+tempo de execução, a tendência predominante é operar próximo da maior frequência 
+testada.
+
+Os múltiplos de \textit{heap} apresentam resultados mais similares entre todos 
+objetivos testados. Para energia, tempo, EDP e \(EDP^2\), os melhores conjuntos se 
+concentram a partir de \(4\times\) o \textit{heap} mínimo, com cobertura de 
+12 ou 13 \textit{benchmarks}. Em contraste, o caso de \(1\times\) praticamente 
+não aparece nessas regiões e surge apenas uma vez na métrica de tempo. Esse 
+resultado sugere que \textit{heaps} mínimos raramente pertencem ao 
+conjunto de configurações mais competitivas, enquanto \textit{heaps} maiores 
+aparecem com regularidade entre os melhores resultados.
+
+\section{Discussão}
+
+Os dados apresentados mostram que não existe uma configuração ótima
+universal para todas as cargas do DaCapo. Alguns \textit{benchmarks}, como
+\texttt{jme}, \texttt{zxing}, \texttt{xalan} e \texttt{sunflow}, apresentam
+regiões amplas de empate estatístico, indicando que diferentes combinações de
+frequência e \textit{heap} produzem resultados semelhantes. Outros, como
+\texttt{h2o} e \texttt{jython}, exibem conjuntos mais estreitos, o que sugere
+maior sensibilidade às escolhas de configuração.
+
+Outro ponto relevante é que os ótimos de energia e de tempo frequentemente não
+coincidem. Entre os 13 \textit{benchmarks} analisados, apenas 6 possuem alguma
+sobreposição entre os conjuntos quase ótimos dessas duas métricas. Assim, uma 
+política de ajuste voltada exclusivamente para reduzir o tempo de execução 
+pode deixar de considerar configurações com consumo energético significativamente 
+mais favorável. Ainda sim, há algumas tendências que podem ser observadas 
+independentemente do objetivo de otimização. Por exemplo, \textit{heaps} 
+mínimos são quase sempre desfavoráveis, recomendando-se no a partir de \(2\times\) 
+o mínimo necessário e idealmente a partir de \(4\times\). Isso mostra que ambientes 
+com restrições de memória não são os mais adequados para otimização de energia ou tempo. 
+Analogamente, frequências muito baixas são desfavoráveis para todos os objetivos 
+testados e devem ser evitadas.
+
+Em síntese, os resultados desta análise apontam três tendências principais:
+(i) frequências muito baixas são globalmente desfavoráveis; (ii) a energia tende
+a ser minimizada em frequências intermediárias, enquanto o tempo favorece as
+frequências mais altas; e (iii) \textit{heaps} a partir de \(4\times\) o mínimo 
+necessário aparecem de forma recorrente entre as melhores configurações. 
+Em conjunto, essas evidências indicam que o comportamento energético da JVM depende 
+da interação entre carga de trabalho, frequência do processador e disponibilidade de 
+memória, não sendo adequadamente descrito por um único parâmetro de ajuste.
