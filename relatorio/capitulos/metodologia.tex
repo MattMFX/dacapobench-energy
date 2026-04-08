@@ -179,10 +179,27 @@ O pós-processamento foi realizado em Python. O script
 comparação. Em seguida, são calculadas métricas derivadas a partir da energia
 do pacote e do tempo de execução: o \textit{Energy-Delay Product} (EDP),
 definido como \(E \times T\), e o \(EDP^2\), definido como \(E^2 \times T\).
-Essas métricas são úteis porque combinam energia e desempenho em uma mesma
-medida, permitindo observar situações em que reduzir o tempo de execução não
-implica, necessariamente, reduzir o consumo energético, como já apontado por
-\citeonline{programming_lang_energy}.
+Essas métricas são importantes porque energia e tempo não variam
+necessariamente na mesma direção. Uma configuração pode reduzir o tempo de
+execução, mas resultar em um consumo energético maior. O EDP funciona como
+uma medida de equilíbrio entre esses dois objetivos: ele penaliza tanto
+execuções lentas quanto execuções energeticamente custosas, evitando que a
+análise considere apenas uma das dimensões. Essa necessidade de observar
+energia e desempenho em conjunto já foi apontada por
+\citeonline{programming_lang_energy}, que mostraram que implementações mais
+rápidas não são necessariamente as mais eficientes em termos energéticos.
+O \(EDP^2\) complementa o EDP ao aumentar o peso da
+energia no produto. Isso penaliza mais as configurações com maior consumo 
+energético. Assim, quando duas configurações apresentam tempos próximos, 
+mas energias distintas, o \(EDP^2\) tende a evidenciar com mais clareza 
+a vantagem da alternativa energeticamente mais econômica. Métricas 
+desse tipo são utilizadas em outros contextos de avaliação de 
+sistemas. O produto entre energia e tempo é empregado, por exemplo, 
+para orientar políticas de escalonamento dinâmico de
+tensão e frequência \cite{green-governors}. Sendo assim, 
+o uso dessas métricas no atual contexto busca apresentar uma visão mais consolidada 
+da relação entre energia e tempo de execução e as configurações que melhor 
+otimizam esses dois objetivos.
 
 Após esse passo, os dados são agrupados por \textit{benchmark}, tamanho de
 \textit{heap} e frequência do processador. Para cada grupo, o script calcula a
