@@ -21,21 +21,21 @@ METRIC_SPECS = [
     {
         'key': 'energy',
         'column': 'Package Joules Mean',
-        'label': 'Energy',
-        'axis_label': 'Energy (Joules)',
+        'label': 'Energia',
+        'axis_label': 'Energia (joules)',
         'ci_low': 'Package Joules CI 95% Low',
         'ci_high': 'Package Joules CI 95% High',
-        'title_suffix': 'Energy vs Frequency',
+        'title_suffix': 'Energia vs Frequência',
         'filename_suffix': 'energy',
     },
     {
         'key': 'time',
         'column': 'Time Elapsed Mean (ms)',
-        'label': 'Time',
-        'axis_label': 'Time (ms)',
+        'label': 'Tempo',
+        'axis_label': 'Tempo (ms)',
         'ci_low': 'Elapsed Time CI 95% Low',
         'ci_high': 'Elapsed Time CI 95% High',
-        'title_suffix': 'Time vs Frequency',
+        'title_suffix': 'Tempo vs Frequência',
         'filename_suffix': 'time',
     },
     {
@@ -45,17 +45,17 @@ METRIC_SPECS = [
         'axis_label': 'EDP (J·s)',
         'ci_low': 'EDP CI 95% Low',
         'ci_high': 'EDP CI 95% High',
-        'title_suffix': 'EDP vs Frequency',
+        'title_suffix': 'EDP vs Frequência',
         'filename_suffix': 'edp',
     },
     {
         'key': 'edp2',
         'column': 'EDP2 Mean',
-        'label': 'EDP2',
+        'label': 'E²DP',
         'axis_label': 'E²DP (J²·s)',
         'ci_low': 'EDP2 CI 95% Low',
         'ci_high': 'EDP2 CI 95% High',
-        'title_suffix': 'E²DP vs Frequency',
+        'title_suffix': 'E²DP vs Frequência',
         'filename_suffix': 'edp2',
     },
 ]
@@ -238,10 +238,10 @@ def generate_benchmark_plots(df, raw_output_dir):
                     plt.ylim(0, y_max * 1.1)
 
             plt.title(f'{benchmark} - {spec["title_suffix"]}')
-            plt.xlabel('Frequency (MHz)')
+            plt.xlabel('Frequência (MHz)')
             plt.ylabel(spec['axis_label'])
             plt.grid(True, linestyle='--', alpha=0.7)
-            plt.legend(title='Heap Size')
+            plt.legend(title='Tamanho do heap')
 
             output_path = raw_output_dir / f'{benchmark}_{spec["filename_suffix"]}.png'
             plt.tight_layout()
@@ -484,10 +484,20 @@ def build_tie_tables(df, summary_output_dir):
 
 
 def generate_summary_heatmaps(df, summary_output_dir):
-    """Shows the full benchmark x configuration surface in two figures."""
+    """Shows the full benchmark x configuration surface in separate figures."""
     heatmap_specs = [
-        ('energy_norm', 'Normalized package energy'),
-        ('time_norm', 'Normalized execution time'),
+        {
+            'metric_col': 'energy_norm',
+            'title': 'Energia normalizada do pacote',
+            'colorbar_label': 'Energia normalizada do pacote',
+            'filename': 'summary_heatmap_energy.png',
+        },
+        {
+            'metric_col': 'time_norm',
+            'title': 'Tempo de execução normalizado',
+            'colorbar_label': 'Tempo de execução normalizado',
+            'filename': 'summary_heatmap_time.png',
+        },
     ]
 
     column_order = (
@@ -498,19 +508,21 @@ def generate_summary_heatmaps(df, summary_output_dir):
     ordered_columns = column_order['Config Label'].tolist()
     benchmarks = sorted(df['Benchmark'].unique())
 
-    fig, axes = plt.subplots(len(heatmap_specs), 1, figsize=(22, 12), constrained_layout=True)
-    if len(heatmap_specs) == 1:
-        axes = [axes]
-
-    for ax, (metric_col, title) in zip(axes, heatmap_specs):
+    for spec in heatmap_specs:
         pivot = (
-            df.pivot_table(index='Benchmark', columns='Config Label', values=metric_col, aggfunc='first')
+            df.pivot_table(
+                index='Benchmark',
+                columns='Config Label',
+                values=spec['metric_col'],
+                aggfunc='first',
+            )
             .reindex(index=benchmarks, columns=ordered_columns)
         )
         finite_values = pivot.to_numpy().ravel()
         finite_values = finite_values[pd.notna(finite_values)]
         vmax = max(float(pd.Series(finite_values).quantile(0.95)), 1.2) if len(finite_values) else 1.2
 
+        fig, ax = plt.subplots(1, 1, figsize=(22, 6.5), constrained_layout=True)
         sns.heatmap(
             pivot,
             ax=ax,
@@ -518,34 +530,29 @@ def generate_summary_heatmaps(df, summary_output_dir):
             mask=pivot.isna(),
             norm=LogNorm(vmin=1.0, vmax=vmax),
             linewidths=0.2,
-            cbar_kws={'label': title},
+            cbar_kws={'label': spec['colorbar_label']},
         )
-        ax.set_title(f'{title} across benchmarks, frequencies, and heap multipliers')
-        ax.set_xlabel('Frequency / relative heap')
+        ax.set_title(f"{spec['title']} por benchmark, frequência e multiplicador de heap")
+        ax.set_xlabel('Frequência / heap relativo')
         ax.set_ylabel('Benchmark')
         ax.tick_params(axis='x', rotation=90)
         ax.tick_params(axis='y', rotation=0)
-
-    fig.suptitle(
-        'Whole-study heatmaps (each cell divided by the best value for that benchmark)',
-        y=1.02,
-    )
-    fig.text(
-        0.5,
-        0.01,
-        'Blank cells indicate configurations that were not measured for that benchmark.',
-        ha='center',
-        fontsize=10,
-    )
-    output_path = summary_output_dir / 'summary_heatmaps.png'
-    fig.savefig(output_path, dpi=200, bbox_inches='tight')
-    plt.close(fig)
-    print(f"Generated {output_path}")
+        fig.text(
+            0.5,
+            0.01,
+            'Cada célula foi dividida pelo melhor valor daquele benchmark. Células em branco indicam configurações não medidas.',
+            ha='center',
+            fontsize=10,
+        )
+        output_path = summary_output_dir / spec['filename']
+        fig.savefig(output_path, dpi=200, bbox_inches='tight')
+        plt.close(fig)
+        print(f"Generated {output_path}")
 
 
 def generate_tie_coverage_plot(frequency_coverage_df, heap_coverage_df, summary_output_dir):
     """Shows distinct-benchmark coverage by frequency and by heap."""
-    objective_order = ['Energy', 'Time', 'EDP', 'EDP2']
+    objective_order = ['Energia', 'Tempo', 'EDP', 'E²DP']
     freq_labels = (
         frequency_coverage_df[['Frequency (MHz)', 'CPU Frequency (MHz)']]
         .drop_duplicates()
@@ -577,11 +584,11 @@ def generate_tie_coverage_plot(frequency_coverage_df, heap_coverage_df, summary_
         annot=True,
         fmt='.0f',
         linewidths=0.4,
-        cbar_kws={'label': 'Benchmarks covered'},
+        cbar_kws={'label': 'Benchmarks cobertos'},
     )
-    axes[0].set_title('Tie-set benchmark coverage by frequency')
-    axes[0].set_xlabel('CPU frequency')
-    axes[0].set_ylabel('Objective')
+    axes[0].set_title('Cobertura de benchmarks empatados por frequência')
+    axes[0].set_xlabel('Frequência da CPU')
+    axes[0].set_ylabel('Objetivo')
     axes[0].tick_params(axis='x', rotation=45)
     axes[0].tick_params(axis='y', rotation=0)
 
@@ -592,11 +599,11 @@ def generate_tie_coverage_plot(frequency_coverage_df, heap_coverage_df, summary_
         annot=True,
         fmt='.0f',
         linewidths=0.4,
-        cbar_kws={'label': 'Benchmarks covered'},
+        cbar_kws={'label': 'Benchmarks cobertos'},
     )
-    axes[1].set_title('Tie-set benchmark coverage by heap multiplier')
-    axes[1].set_xlabel('Heap multiplier')
-    axes[1].set_ylabel('Objective')
+    axes[1].set_title('Cobertura de benchmarks empatados por multiplicador de heap')
+    axes[1].set_xlabel('Multiplicador de heap')
+    axes[1].set_ylabel('Objetivo')
     axes[1].tick_params(axis='x', rotation=0)
     axes[1].tick_params(axis='y', rotation=0)
 
