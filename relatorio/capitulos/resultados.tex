@@ -65,7 +65,12 @@ penalidade energética quanto a penalidade temporal em relação ao melhor caso 
 cada \textit{benchmark}. Vale notar que \textit{heaps} muito restritos (próximos 
 do mínimo necessário) penalizam fortemente as duas métricas, sendo o fator mais 
 relevante no desempenho, já que nem mesmo para as frequências mais altas essa 
-configuração de \textit{heap} é competitiva.
+configuração de \textit{heap} é competitiva. Esse padrão também aparece
+visualmente nos mapas de calor como barras verticais amarelas, isto é, colunas
+inteiras associadas a um mesmo múltiplo de \textit{heap} com valores altos em
+praticamente todas as frequências. Quando isso ocorre, podemos interpretar que
+essa configuração de \textit{heap} é ruim de forma consistente,
+independentemente dos demais fatores do experimento.
 
 \section{Otimização de energia e tempo}
 

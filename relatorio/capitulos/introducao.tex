@@ -16,6 +16,17 @@ melhorar a eficiência das TIC devem ser compartilhados por desenvolvedores de
 de energia, o que se torna cada vez mais relevante com o crescimento dos
 dispositivos móveis.
 
+A relevância desse tema vai além da dimensão ambiental. Em
+\textit{data centers}, o consumo de energia representa um dos principais custos
+de operação, superando até mesmo o próprio custo de aquisição
+de \textit{hardware} \cite{datacenter-energy-survey}. Nesse contexto, 
+melhorias na eficiência energética do \textit{software} têm 
+impacto econômico direto, pois quando uma mesma aplicação é
+executada sobre milhares de máquinas, pequenas reduções no consumo por execução
+se traduzem em economias expressivas. Sendo assim, entender como decisões de
+\textit{software} afetam esse consumo é também uma forma de otimizar o custo operacional 
+da infraestrutura computacional.
+
 Apesar da predominância do \textit{hardware}, o interesse dos desenvolvedores
 em assuntos relacionados ao consumo de energia em \textit{software} é crescente
 \cite{mining-questions}. Isso evidencia a relevância do tema. Além desse
@@ -31,6 +42,19 @@ green-computing-literature-survey}. O aumento da relevância do tema ressalta a
 importância de fornecer a desenvolvedores e pesquisadores métricas precisas
 relacionadas à energia, para que possam analisar os impactos de suas decisões
 na eficiência energética das aplicações.
+
+Essa discussão também é importante no contexto de dispositivos móveis. O
+Android, o sistema operacional móvel mais popular do mundo ao final de 2023
+\cite{art-memory-management}, utiliza o Android Runtime (ART) para executar suas aplicações. 
+O ART é uma máquina virtual gerenciada com características próximas às da JVM, como compilação JIT e AOT,
+gerenciamento automático de memória por coleta de lixo e suporte à linguagem
+Java \cite{art-memory-management}. Ganhos de eficiência energética nesse ecossistema
+significam melhor aproveitamento da bateria e o prolongamento da sua vida útil \cite{dalvik-vs-art}, 
+trazendo um impacto direto na experiência de um número expressivo de usuários. 
+Assim, estudar o consumo de energia de cargas
+executadas sobre a JVM também ajuda a entender um problema mais amplo, ligado
+à eficiência de \textit{runtimes} gerenciados em plataformas amplamente
+utilizadas.
 
 O uso de \textit{benchmarks} para avaliação de \textit{software} é parte
 importante do seu processo de desenvolvimento. Porém, métricas relacionadas ao
