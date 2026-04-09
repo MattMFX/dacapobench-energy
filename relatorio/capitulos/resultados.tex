@@ -225,13 +225,13 @@ independentemente dos demais fatores do experimento.
 Para complementar a leitura dos mapas de calor, a
 Figura \ref{fig:summary_table_serial_gc} mostra quantos \textit{benchmarks}
 incluem cada frequência e cada múltiplo de \textit{heap} no conjunto de
-configurações estatisticamente empatadas com a melhor média, considerando a
+configurações estatisticamente indistinguíveis da melhor média, considerando a
 sobreposição dos intervalos de confiança de 95\%. Ou seja, para cada uma dessas 
-configurações, a média de energia ou tempo é estatisticamente igual à melhor média 
-observada para o \textit{benchmark}. A tabela que mostra as diferentes frequências 
-não inclui as frequências de 400MHz e 800MHz, pois nenhum \textit{benchmark} 
-apresentou uma configuração com essas frequências que fosse estatisticamente 
-igual à melhor média observada.
+configurações, não é possível afirmar que as médias de energia ou de tempo sejam diferentes 
+da melhor média observada para o \textit{benchmark}. A tabela que mostra as diferentes frequências 
+não inclui as frequências de 400MHz e 800MHz, pois todos os \textit{benchmarks} executados
+com essas configurações apresentaram resultados inferiores à melhor média, mesmo considerando 
+os intervalos de confiança.
 
 \begin{figure}[htbp]
     \centering
@@ -269,9 +269,9 @@ frequência e \textit{heap} produzem resultados semelhantes. Outros, como
 \texttt{h2o} e \texttt{jython}, exibem conjuntos mais estreitos, o que sugere
 maior sensibilidade às escolhas de configuração.
 
-Outro ponto relevante é que os ótimos de energia e de tempo frequentemente não
-coincidem. Entre os 13 \textit{benchmarks} analisados, apenas 6 possuem alguma
-sobreposição entre os conjuntos quase ótimos dessas duas métricas. Assim, uma 
+Outro ponto relevante é que as configurações possivelmente ótimas para energia e tempo 
+frequentemente não coincidem. Entre os 13 \textit{benchmarks} analisados, apenas 6 possuem alguma
+configuração possivelmente ótima para ambos os objetivos. Assim, uma 
 política de ajuste voltada exclusivamente para reduzir o tempo de execução 
 pode deixar de considerar configurações com consumo energético significativamente 
 mais favorável. Ainda assim, há algumas tendências que podem ser observadas 
@@ -285,8 +285,8 @@ testados e devem ser evitadas.
 Em síntese, os resultados desta análise apontam três tendências principais:
 (i) frequências muito baixas são globalmente desfavoráveis; (ii) a energia tende
 a ser minimizada em frequências intermediárias, enquanto o tempo favorece as
-frequências mais altas; e (iii) \textit{heaps} a partir de \(4\times\) o mínimo 
-necessário aparecem de forma recorrente entre as melhores configurações. 
-Em conjunto, essas evidências indicam que o comportamento energético da JVM depende 
-da interação entre carga de trabalho, frequência do processador e disponibilidade de 
-memória, não sendo adequadamente descrito por um único parâmetro de ajuste.
+frequências mais altas; e (iii) \textit{heaps} a partir de \(4\times\) aparecem 
+de forma recorrente entre as melhores configurações. Em conjunto, essas evidências indicam que o 
+comportamento energético da JVM depende da interação entre carga de trabalho, frequência do 
+processador e disponibilidade de memória, não sendo adequadamente descrito por um único 
+parâmetro de ajuste.
