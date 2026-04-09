@@ -10,7 +10,7 @@ estão presentes originalmente. Essa extensão constitui uma das
 principais contribuições do trabalho, pois amplia o uso do DaCapo como
 ferramenta para estudos de eficiência energética na JVM.
 
-Os resultados obtidos mostram que consumo de energia e tempo de execução, ainda
+Os resultados obtidos mostram que o consumo de energia e o tempo de execução, ainda
 que relacionados, não se comportam de forma equivalente. De modo geral, as
 configurações de menor tempo concentram-se nas frequências mais altas do
 processador, enquanto as menores energias tendem a surgir em frequências
@@ -18,8 +18,8 @@ intermediárias. Além disso, \textit{heaps} maiores que o mínimo necessário,
 especialmente a partir de \(4\times\), aparecem com frequência
 entre as configurações mais competitivas. Esses resultados reforçam a hipótese
 inicial do trabalho e estão de acordo com a literatura que aponta que tempo e
-energia não devem ser tratados como métricas intercambiáveis \cite{programming_lang_energy}, 
-elas merecem ser tratadas separadamente e consideradas de forma conjunta na análise de 
+energia não devem ser tratados como métricas intercambiáveis \cite{programming_lang_energy}. 
+Essas métricas merecem ser tratadas separadamente e consideradas de forma conjunta na análise de 
 desempenho.
 
 Outro aspecto importante observado ao longo da análise é que o comportamento
@@ -36,7 +36,7 @@ estudo ainda apresenta limitações. As medições foram realizadas em um único
 \textit{hardware}, com uma única versão da JVM e um conjunto
 controlado de configurações experimentais. Além disso, parte dos
 \textit{benchmarks} do DaCapo Chopin não pôde ser incorporada à análise em
-virtude de problemas na execução. Assim, se mostra necessário realizar essa 
+virtude de problemas na execução. Assim, mostra-se necessário realizar essa 
 análise caso a caso, considerando as características de cada aplicação e 
 ambiente de execução.
 
@@ -46,5 +46,5 @@ e não apenas como reflexo de avanços em \textit{hardware}. Em contextos como
 \textit{data centers}, nos quais pequenas variações de consumo podem se
 acumular em custo operacional, e plataformas móveis, nas quais esse consumo
 afeta diretamente a autonomia de bateria, dispor de métricas energéticas
-explícitas contribui para decisões de desenvolvimento e pesquisa mais bem
+explícitas contribui para decisões de desenvolvimento e de pesquisa mais bem
 fundamentadas.
