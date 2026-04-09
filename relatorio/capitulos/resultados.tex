@@ -160,20 +160,38 @@ análise apresentada neste capítulo.
 
 \section{Visão geral}
 
-A Figura \ref{fig:summary_heatmaps_serial_gc} apresenta, para cada
-\textit{benchmark}, a energia e o tempo normalizados pela melhor configuração
-observada para aquele mesmo \textit{benchmark}. Dessa forma, valores próximos de 1 indicam
-configurações competitivas, enquanto valores mais altos indicam perda relativa
-em comparação com o melhor resultado obtido para o \textit{benchmark}.
+As Figuras \ref{fig:summary_heatmap_energy_serial_gc} e
+\ref{fig:summary_heatmap_time_serial_gc} apresentam, para cada
+\textit{benchmark}, respectivamente, a energia e o tempo normalizados pela
+melhor configuração observada para aquele mesmo \textit{benchmark}. Dessa
+forma, valores próximos de 1 indicam configurações competitivas, enquanto
+valores mais altos indicam perda relativa em comparação com o melhor
+resultado obtido para o \textit{benchmark}.
 
-\begin{figure}[htbp]
+\clearpage
+\begin{landscape}
+\begin{figure}[p]
     \centering
-    \includegraphics[width=\textwidth]{figs/summary_heatmaps_serial_gc.png}
-    \caption{Mapa de calor com energia e tempo normalizados para todos os
+    \includegraphics[width=\textheight,height=0.82\textwidth,keepaspectratio]{../graphs/serial-gc/summary/summary_heatmap_energy.png}
+    \caption{Mapa de calor da energia normalizada para todos os
     \textit{benchmarks}, frequências e múltiplos de \textit{heap}
     considerados nesta análise.}
-    \label{fig:summary_heatmaps_serial_gc}
+    \label{fig:summary_heatmap_energy_serial_gc}
 \end{figure}
+\end{landscape}
+\clearpage
+
+\begin{landscape}
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=\textheight,height=0.82\textwidth,keepaspectratio]{../graphs/serial-gc/summary/summary_heatmap_time.png}
+    \caption{Mapa de calor do tempo de execução normalizado para todos os
+    \textit{benchmarks}, frequências e múltiplos de \textit{heap}
+    considerados nesta análise.}
+    \label{fig:summary_heatmap_time_serial_gc}
+\end{figure}
+\end{landscape}
+\clearpage
 
 Observa-se, inicialmente, que as frequências mais baixas, em especial
 400 MHz e 800 MHz, aparecem com frequência fora da região de melhor
