@@ -10,6 +10,154 @@ agregada por frequência do processador e por múltiplos relativos de
 \textit{heap}, permitindo observar tendências gerais comuns aos
 \textit{benchmarks} avaliados.
 
+\section{Metodologia}
+
+\subsection{Configuração do Ambiente}
+
+Os dados apresentados em neste capítulo foram gerados a partir de uma
+máquina com as seguintes configurações:
+
+\begin{table}[ht]
+    \centering
+    \caption{Especificações Técnicas do Ambiente de Testes}
+    \label{tab:especificacoes_sistema}
+    \begin{tabularx}{\textwidth}{l X}
+        \toprule
+        \textbf{Componente} & \textbf{Descrição} \\
+        \midrule
+        \textbf{Hardware} & \\
+        Modelo & Lenovo IdeaPad 320-15IKB (Type 80YH) \\
+        Processador & Intel Core i7-7500U (2 núcleos, 4 threads) \\
+        Clock & 2,70 GHz (Base) / 3,50 GHz (Turbo Max) \\
+        Memória RAM & 16 GiB \\
+        Armazenamento & HDD Seagate 2,0 TB (5400 RPM, SATA 6,0 Gb/s) \\
+        GPU Integrada & Intel HD Graphics 620 \\
+        GPU Dedicada & NVIDIA GeForce 940MX (Arquitetura Maxwell) \\
+        \midrule
+        \textbf{Software} & \\
+        Sistema Operacional & Linux Mint 22.1 "Xia" (64 bits) \\
+        Kernel & 6.8.0-87-generic (x86\_64) \\
+        Base de Distro & Ubuntu 24.04 LTS (Noble Numbat) \\
+        Ambiente Gráfico & Cinnamon 6.4.6 (Servidor X.Org 21.1.11) \\
+        JVM de Execução & OpenJDK 21 \\
+        Compilador & GCC v13.3.0 \\
+        Drivers de Vídeo & i915 (Intel) / Nouveau (NVIDIA) / Mesa v24.0.9 \\
+        \bottomrule
+    \end{tabularx}
+    \vspace{2pt}
+    \small
+    \centering
+\end{table}
+
+Para garantir maior confiabilidade e precisão dos dados, a literatura recomenda
+desabilitar o Intel Turbo Boost e o \textit{Hyper-Threading}
+\cite{vms-hot-and-cold, steady-state-assessment}. Essas funcionalidades podem
+introduzir ruído nas medições, pois alteram dinamicamente o comportamento da
+CPU ao longo das execuções. Por esse motivo, todos os \textit{benchmarks}
+foram executados com esses recursos desativados. Além disso, cada execução foi
+fixada a um único \textit{core}. Embora alguns \textit{benchmarks} possam se
+beneficiar de paralelismo, essa decisão reduziria a comparabilidade entre os
+resultados e adicionaria \textit{overhead} energético decorrente da própria
+administração das \textit{threads}.
+
+\subsection{Execução dos Experimentos}
+
+A metodologia adotada neste trabalho separa
+explicitamente as iterações de aquecimento das iterações utilizadas na análise
+final. Para isso, foi empregada uma versão estendida do DaCapo Chopin
+\cite{dacapochopin}, instrumentada com um \textit{callback} próprio chamado
+\texttt{EnergyCallback}. Esse \textit{callback} coleta as leituras de energia
+imediatamente antes e imediatamente depois de cada iteração, utilizando o
+JRAPL, e registra também o tempo decorrido informado pelo próprio
+\textit{harness}. Dessa forma, cada observação reúne, de maneira sincronizada,
+o tempo de execução e a energia estimada nos domínios DRAM, CPU e pacote do
+processador.
+
+Embora a suíte completa contenha 22 \textit{benchmarks}, neste trabalho foram
+considerados apenas os \textit{benchmarks} que puderam ser construídos e
+executados corretamente no ambiente experimental. Todas as execuções utilizaram
+o perfil de carga \texttt{small}. Essa escolha decorre de uma limitação
+técnica do ambiente experimental, configurações maiores elevavam
+substancialmente o tempo total dos experimentos e, em alguns casos,
+inviabilizavam a execução. Além disso, manter a mesma classe de entrada ao
+longo de todos os experimentos preserva a comparabilidade entre as medições.
+
+As execuções foram automatizadas por dois scripts. O script
+\texttt{run\_energy.sh} realiza uma execução individual do \textit{benchmark}
+instrumentado, enquanto o script \texttt{run\_sweep.sh} executa, de forma
+sequencial, todas as combinações de parâmetros definidas para o experimento. Em
+cada execução, o processo Java é fixado ao núcleo 0 por afinidade de CPU, o
+\textit{Hyper-Threading} é desabilitado, o Intel Turbo Boost é desligado e, ao
+final, as configurações originais da máquina são restauradas. Esse controle
+busca reduzir fontes externas de variabilidade, em consonância com a literatura
+sobre avaliação de desempenho em JVMs
+\cite{vms-hot-and-cold, steady-state-assessment}.
+
+Além do isolamento do processo, foram variados dois fatores experimentais
+principais: frequência do processador e tamanho de \textit{heap}. A frequência
+foi configurada manualmente, por meio do \texttt{cpupower}, nos valores
+400 MHz, 800 MHz, 1{,}2 GHz, 1{,}6 GHz, 2{,}0 GHz, 2{,}4 GHz e 2{,}7 GHz. A
+escolha por varrer a frequência decorre do interesse em observar a interação
+entre o comportamento da aplicação e mecanismos de escalonamento dinâmico de
+frequência, aspecto já explorado em trabalhos baseados em JRAPL \cite{jrapl}.
+Os valores de 400 MHz e 2{,}7 GHz correspondem, respectivamente, à menor e à maior
+frequência disponibilizadas pelo \textit{hardware}, e os
+valores intermediários representam os degraus discretos que o processador pode
+assumir nessa configuração. Para cada \textit{benchmark}, foi definido um
+conjunto próprio de tamanhos de \textit{heap}, sempre com \texttt{-Xms} e
+\texttt{-Xmx} configurados com o mesmo valor, evitando redimensionamentos
+dinâmicos de memória ao longo da execução e tornando mais controlado o espaço
+de memória disponível para a JVM. A escolha desses valores parte dos
+\textit{heaps} mínimos publicados pelo DaCapo Chopin para a configuração
+\texttt{small}. A partir desse valor de
+referência, foram considerados múltiplos desse mínimo. Na apresentação
+dos resultados, esses tamanhos são expressos de forma relativa ao menor
+\textit{heap} efetivamente avaliado para cada \textit{benchmark}, de modo que
+\(1\times\) denota o valor mínimo e \(2\times\), \(3\times\) e
+assim por diante representam seus múltiplos.
+
+Nas execuções consideradas neste relatório, utilizou-se o coletor de lixo G1 e
+o binário do OpenJDK 21. Para cada combinação de \textit{benchmark}, frequência
+e \textit{heap}, foram realizadas 10 repetições independentes. Em cada
+repetição, o DaCapo executa iterações de aquecimento e uma iteração medida, com
+limite máximo de 40 iterações por tentativa. Quando o próprio \textit{harness}
+informa falha de convergência, a repetição é descartada e executada novamente,
+de modo que apenas repetições concluídas com sucesso sejam mantidas no conjunto
+de dados. Esse procedimento reduz a chance de incorporar à análise execuções
+ainda instáveis ou representativas apenas de uma fase transitória da JVM.
+
+\subsection{Tratamento e análise dos dados}
+
+O \textit{callback} implementado neste trabalho grava, ao final de cada
+iteração, uma linha em um arquivo CSV contendo o nome do \textit{benchmark}, a
+informação de validade, a indicação de aquecimento, o tempo decorrido em
+milissegundos, o soquete medido, o tamanho de \textit{heap}, o coletor de
+lixo, a frequência do processador e as energias estimadas para DRAM, CPU e
+pacote. Como a máquina experimental possui um único soquete, cada iteração
+medida corresponde, na prática, a uma única linha de dados no arquivo
+\texttt{energy.csv}. Entre os domínios coletados, a energia do pacote foi
+adotada como métrica principal de comparação, pois representa o consumo
+agregado do processador durante a execução e foi a base para o cálculo das
+métricas derivadas empregadas na análise.
+
+O pós-processamento foi realizado em Python. O script
+\texttt{process\_energy.py} primeiro descarta todas as linhas marcadas como
+\textit{warmup}, preservando apenas as iterações efetivamente utilizadas para
+comparação. Em seguida, são calculadas métricas derivadas a partir da energia
+do pacote e do tempo de execução como o \textit{Energy-Delay Product} (EDP) e 
+o \(EDP^2\).
+
+Após esse passo, os dados são agrupados por \textit{benchmark}, tamanho de
+\textit{heap} e frequência do processador. Para cada grupo, o script calcula a
+média e o intervalo de confiança de 95\% por meio de \textit{bootstrap} com
+1000 reamostragens. Essa escolha permite resumir os resultados sem assumir
+previamente uma distribuição paramétrica específica para as medições. Por fim,
+o script \texttt{generate\_graphs.py} normaliza os tamanhos de \textit{heap}
+em múltiplos do menor valor avaliado para cada \textit{benchmark} e gera
+gráficos de energia, tempo, EDP e \(EDP^2\) em função da frequência do
+processador, incluindo bandas de confiança. Esses gráficos constituem a base da
+análise apresentada neste capítulo.
+
 \section{Visão geral}
 
 A Figura \ref{fig:summary_heatmaps_serial_gc} apresenta, para cada
