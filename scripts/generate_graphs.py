@@ -522,7 +522,7 @@ def generate_summary_heatmaps(df, summary_output_dir):
         finite_values = finite_values[pd.notna(finite_values)]
         vmax = max(float(pd.Series(finite_values).quantile(0.95)), 1.2) if len(finite_values) else 1.2
 
-        fig, ax = plt.subplots(1, 1, figsize=(22, 6.5), constrained_layout=True)
+        fig, ax = plt.subplots(1, 1, figsize=(22, 8), constrained_layout=True)
         sns.heatmap(
             pivot,
             ax=ax,
@@ -532,18 +532,14 @@ def generate_summary_heatmaps(df, summary_output_dir):
             linewidths=0.2,
             cbar_kws={'label': spec['colorbar_label']},
         )
-        ax.set_title(f"{spec['title']} por benchmark, frequência e multiplicador de heap")
-        ax.set_xlabel('Frequência / heap relativo')
-        ax.set_ylabel('Benchmark')
-        ax.tick_params(axis='x', rotation=90)
-        ax.tick_params(axis='y', rotation=0)
-        fig.text(
-            0.5,
-            0.01,
-            'Cada célula foi dividida pelo melhor valor daquele benchmark. Células em branco indicam configurações não medidas.',
-            ha='center',
-            fontsize=10,
+        ax.set_title(
+            f"{spec['title']} por benchmark, frequência e multiplicador de heap",
+            pad=14,
         )
+        ax.set_xlabel('Frequência / heap relativo', labelpad=12)
+        ax.set_ylabel('Benchmark')
+        ax.tick_params(axis='x', rotation=90, labelsize=8)
+        ax.tick_params(axis='y', rotation=0, labelsize=9)
         output_path = summary_output_dir / spec['filename']
         fig.savefig(output_path, dpi=200, bbox_inches='tight')
         plt.close(fig)
