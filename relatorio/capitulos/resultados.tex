@@ -169,28 +169,24 @@ valores mais altos indicam perda relativa em comparação com o melhor
 resultado obtido para o \textit{benchmark}.
 
 \clearpage
-\begin{landscape}
-\begin{figure}[p]
+\begin{sidewaysfigure}[p]
     \centering
-    \includegraphics[width=\textheight,height=0.82\textwidth,keepaspectratio]{../graphs/serial-gc/summary/summary_heatmap_energy.png}
+    \includegraphics[width=\textheight]{../graphs/serial-gc/summary/summary_heatmap_energy.png}
     \caption{Mapa de calor da energia normalizada para todos os
     \textit{benchmarks}, frequências e múltiplos de \textit{heap}
     considerados nesta análise.}
     \label{fig:summary_heatmap_energy_serial_gc}
-\end{figure}
-\end{landscape}
+\end{sidewaysfigure}
 \clearpage
 
-\begin{landscape}
-\begin{figure}[p]
+\begin{sidewaysfigure}[p]
     \centering
-    \includegraphics[width=\textheight,height=0.82\textwidth,keepaspectratio]{../graphs/serial-gc/summary/summary_heatmap_time.png}
+    \includegraphics[width=\textheight]{../graphs/serial-gc/summary/summary_heatmap_time.png}
     \caption{Mapa de calor do tempo de execução normalizado para todos os
     \textit{benchmarks}, frequências e múltiplos de \textit{heap}
     considerados nesta análise.}
     \label{fig:summary_heatmap_time_serial_gc}
-\end{figure}
-\end{landscape}
+\end{sidewaysfigure}
 \clearpage
 
 Observa-se, inicialmente, que as frequências mais baixas, em especial
@@ -232,7 +228,7 @@ cada \textit{benchmark}. Vale notar que \textit{heaps} muito restritos (próximo
 do mínimo necessário) penalizam fortemente as duas métricas, sendo o fator mais 
 relevante no desempenho, já que nem mesmo para as frequências mais altas essa 
 configuração de \textit{heap} é competitiva. Esse padrão também aparece
-visualmente nos mapas de calor como barras verticais amarelas, isto é, colunas
+visualmente nos mapas de calor como barras com cores mais claras, isto é, colunas
 inteiras associadas a um mesmo múltiplo de \textit{heap} com valores altos em
 praticamente todas as frequências. Quando isso ocorre, podemos interpretar que
 essa configuração de \textit{heap} é ruim de forma consistente,
