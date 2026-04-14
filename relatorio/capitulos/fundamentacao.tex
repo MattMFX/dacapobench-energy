@@ -89,3 +89,40 @@ escalonamento dinâmico de tensão e frequência \cite{green-governors}. Sendo
 assim, o uso dessas métricas no atual contexto busca apresentar uma visão mais
 consolidada da relação entre energia e tempo de execução e as configurações que
 melhor otimizam esses dois objetivos.
+
+\section{Trabalhos Relacionados}
+
+A Tabela \ref{tab:trabalhos_relacionados} resume alguns trabalhos relacionados ao
+tema e destaca, para cada caso, a diferença de escopo em relação a este trabalho.
+
+\begin{table}[ht]
+    \centering
+    \caption{Comparação entre trabalhos relacionados e esta dissertação}
+    \label{tab:trabalhos_relacionados}
+    \small
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabularx}{\textwidth}{|p{2.5cm}|X|X|X|}
+        \hline
+        \textbf{Trabalho} & \textbf{Objeto de estudo} & \textbf{Métricas analisadas} & \textbf{Diferença principal em relação a este trabalho} \\
+        \hline
+        \citeonline{energy-java-collections-hasan} & Operações sobre coleções Java. & Energia. & Foca em microcenários de estruturas de dados, e não em cargas completas da JVM. \\
+        \hline
+        \citeonline{programming_lang_energy} & Problemas equivalentes em múltiplas linguagens. & Energia, tempo e memória. & Compara linguagens, enquanto esta dissertação analisa cargas Java e parâmetros da JVM. \\
+        \hline
+        \citeonline{jrapl} & Otimizações energéticas em programas Java e biblioteca JRAPL. & Energia e tempo. & Introduz a ferramenta de medição, mas não a integra a uma suíte consolidada como o DaCapo Chopin. \\
+        \hline
+        \citeonline{dalvik-vs-art} & Comparação entre Dalvik e ART em dispositivos móveis. & Energia e descarga de bateria. & Analisa \textit{runtimes} móveis, e não parâmetros de execução da JVM em cargas Java. \\
+        \hline
+        Este trabalho & Cargas do DaCapo Chopin na JVM com instrumentação energética integrada. & Energia do pacote, tempo, EDP e \(EDP^2\). & Integra a medição energética ao DaCapo Chopin e analisa como frequência e \textit{heap} afetam energia e desempenho. \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+Esses trabalhos mostram que energia pode ser influenciada pela
+escolha da linguagem, pela estrutura de dados utilizada, pelo \textit{runtime}
+ou por otimizações específicas. Entretanto, permanece menos explorado como 
+as diferentes frequências do processador e tamanhos de \textit{heap} interagem 
+com diferentes cargas de trabalho e o impacto que isso gera sobre a energia e o tempo de execução. Esta
+dissertação procura preencher essa lacuna ao combinar uma extensão do DaCapo
+Chopin para coleta energética com uma análise comparativa de energia e tempo em
+13 \textit{benchmarks} Java.
