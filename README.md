@@ -1,125 +1,169 @@
-# The DaCapo Benchmark Suite
+# DaCapo Energy Fork
 
-Last updated 2023-11-08
+This repository is a research-oriented fork of the [DaCapo Benchmark Suite](http://dacapobench.org) used to run controlled JVM experiments with energy measurements based on Intel RAPL via jRAPL.
 
-This benchmark suite is intend as a tool for the research community.
-It consists of a set of open source, real world applications with
-non-trivial memory loads.
+Most of the code under `benchmarks/` is upstream DaCapo code. The main custom pieces in this fork are:
 
+- `benchmarks/harness/src/EnergyCallback.java`
+- `benchmarks/libs/jRAPL-master/`
+- `scripts/run_energy.sh`
+- `scripts/run_sweep.sh`
+- `scripts/process_energy.py`
+- `scripts/generate_graphs.py`
 
-## Guidelines for use
+## What This Fork Adds
 
-When quoting results in publications, the authors of this suite
-strongly request that:
+- A DaCapo callback that records elapsed time and energy counters per run.
+- A shell runner that prepares the environment, compiles the callback, and executes benchmarks with jRAPL.
+- A sweep script for repeating experiments across benchmark, heap, frequency, GC, and Java combinations.
+- Python scripts to aggregate raw CSV output and generate plots/tables.
 
-* The exact version of the suite be given (number & name, eg 'dacapo-23.11-chopin')
+## Requirements
 
-* The suite be cited in accordance with the usual standards of acknowledging credit in academic research.
+The energy-measurement workflow is Linux-specific and assumes access to the machine's real RAPL counters.
 
-* Please cite the [2006 OOPSLA paper](http://doi.acm.org/10.1145/1167473.1167488) or a more recent paper by the DaCapo authors providing an up-to-date description of the suite if and when such a paper becomes available.
+- Linux on bare metal.
+- Java installed and available on `PATH`.
+- `sudo` access for the experiment runner.
+- `cpupower` and `taskset`.
+- The `msr` kernel module loaded: `sudo modprobe msr`.
+- A built DaCapo jar in `benchmarks/`, or an explicit path passed to the runner.
+- The jRAPL native library built from `benchmarks/libs/jRAPL-master/`.
 
-* All command line options used be reported.  For example, if you explicitly override the number of threads or set the number of iterations, you must report this when you publish results.  Likewise you should report exactly which JVM version you use, and all commandline options provided to the JVM.
+The plotting scripts require Python 3 plus the packages listed in `requirements.txt`.
 
-For more information see the [DaCapo Benchmark web page](http://dacapobench.org).
+## Building The Components
 
+### 1. Build the DaCapo jar
 
-## Building
+If you do not already have a DaCapo jar under `benchmarks/`, build one from source:
 
-The easiest way to obtain the benchmark suite is to download the pre-built suite file from the DaCapo Benchmark web site above.
+```bash
+cd benchmarks
+cp default.properties local.properties
+# edit local.properties for your machine/JDK installation
+ant dist
+```
 
-If, however, you want to build from source read on...
+The runners auto-detect a single matching jar in `benchmarks/`. If you have more than one, pass the desired artifact explicitly with `-a` or `DACAPO_JAR`.
 
-##### Run ant:
+### 2. Build the jRAPL native library
 
-`ant -p`      [prints out description, including configuration and environment variable settings]
+```bash
+cd benchmarks/libs/jRAPL-master
+make lib_shared_CPUScaler
+```
 
-`ant`         [builds all benchmarks, creates a zip file]
+The native library is loaded as `libCPUScaler.so` during benchmark execution.
 
-`ant dist`    [builds all benchmarks, this is the default]
+### 3. Install Python dependencies
 
-`ant source`  [builds a source distribution including benchmarks and tools]
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+```
 
-`ant bm`      [builds a specific benchmark, bm]
+## Running Experiments
 
-**NOTE**
+### Single benchmark
 
-A log of each directory is created under this benchmark directory
-for benchmark build status and build success or failure files
-to be stored.  The directory log directory is normally of the
-form
-`${basedir}/log/${build.time}`
-and contains status.txt where each benchmark build status is recorded,
-and either pass.txt if all benchmarks build, or fail.txt if one or
-more benchmarks fail to build. Note: that either fail.txt or pass.txt
-is created when a full build is performed.
+```bash
+./scripts/run_energy.sh -b h2 -r 5 -s 160m -g serial -F 2.0GHz
+```
 
-**IMPORTANT:** before trying to build the suite:
+Useful options:
 
-1. Set your `JAVA_HOME` environment variable appropriately (it must be set and be consistent with the VM that will be used to build the suite).
+- `-j <java_bin>` selects the JVM binary.
+- `-a <dacapo_jar>` selects the DaCapo jar explicitly.
+- `-o <csv_file>` changes the output CSV filename under `data/`.
 
-2. Create the `local.properties` file (using `default.properties` as a template)
-   
-3. Set `jdk.11.home`, in the `local.properties`, to point to a Java 11 installation.
+The script compiles the callback classes before each run and writes raw measurements to `data/energy.csv` by default.
 
+### Parameter sweep
 
-For more information, run `ant -p` in the benchmarks directory.
+```bash
+./scripts/run_sweep.sh -o energy.csv
+```
 
-## Customization
+Edit the arrays in `scripts/run_sweep.sh` to choose:
 
-It is possible to use callbacks to run code before a benchmark starts, when it stops, and when the run has completed.
-To do so, extend the class `Callback` (see the file [`harness/src/ExampleCallback.java`](https://github.com/dacapobench/dacapobench/blob/main/benchmarks/harness/src/ExampleCallback.java) for an example).
+- benchmarks
+- heap sizes
+- garbage collectors
+- CPU frequencies
+- Java binaries
 
-To run a benchmark with your callback, run:
+By default, the sweep uses `java` from `PATH`. You can also forward a specific jar with `-a <dacapo_jar>`.
 
-    java -jar dacapo-23.11-chopin.jar -c <callback> <benchmark>
+## Processing Results
 
-## Source Code Structure
+Aggregate the raw CSV:
 
-### `harness` (The benchmark harness)
+```bash
+python scripts/process_energy.py
+```
 
-This directory includes all of the source code for the DaCapo harness, which is used to invoke the benchmarks, validate output, etc.
+Useful options:
 
-	
-### `bms` (The benchmarks)
+- `-i <csv>` selects the raw input file. Default: `data/energy.csv`.
+- `-o <csv>` selects the aggregated output file. Default: `data/energy_stats.csv`.
 
-* `bms/<bm>/src` Source written by the DaCapo group to drive the benchmark `<bm>`
-* `bms/<bm>/downloads`	MD5 sums for each of the requisite downloads.  These are used to cache the downloads (avoiding re-downloading on each build)
-* `bms/<bm>/data` Directory containing any data used to drive the benchmark
-* `bms/<bm>/<bm>.cnf`	Configuration file for `<bm>`
-* `bms/<bm>/<bm>.patch`	Patches against the orginal sources (if any)
-* `bms/<bm>/stats-*.yml`	Workload statistics for `<bm>`
-* `bms/<bm>/build.xml`	Local build file for <bm>
-* `bms/<bm>/build` _Directory where building occurs.  This is only created at build time._
-* `bms/<bm>/dist` _Directory where the result of the build goes.  This is only created at build time._
+What `scripts/process_energy.py` does:
 
+- reads the raw CSV generated by `EnergyCallback`
+- discards warmup rows and keeps only measured iterations
+- groups results by `benchmark`, `heap_size`, and `cpu_freq_mhz`
+- computes the mean and 95% bootstrap confidence interval for:
+  - elapsed time
+  - DRAM energy
+  - CPU energy
+  - package energy
+  - EDP
+  - EDP2
+- writes an aggregated CSV used as input to the graph-generation step
 
-### `libs` (Common code used by one or more benchmarks.)
+The raw input is expected to contain columns such as:
 
-Each of these directories more or less mirror the `bm` directories.
+- `benchmark`
+- `warmup`
+- `elapsed_ms`
+- `heap_size`
+- `cpu_freq_mhz`
+- `dram_j`
+- `cpu_j`
+- `package_j`
 
+Generate plots and summary artifacts:
 
-## License
+```bash
+python scripts/generate_graphs.py
+```
 
-The DaCapo Benchmark Suite conmprises several open source or public
-domain programs, plus a test harness, some patches to enable the
-benchmarks to run under the test harness, and a packaging process. The
-benchmarks are distributed under their own licenses and the remaining
-component is distributed under the Apache License, version 2.0.
+Useful options:
 
-   Copyright 2023 The DaCapo Project,
-   Schoool of Computer Sciences
-   Australian National University
-   Acton, ACT 2601
-   Australia
+- `-i <csv>` selects the aggregated input file. Default: `data/energy_stats.csv`.
+- `--raw-output-dir <dir>` changes the output directory for per-benchmark plots. Default: `graphs/raw`.
+- `--summary-output-dir <dir>` changes the output directory for summary plots and tables. Default: `graphs/summary`.
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
+What `scripts/generate_graphs.py` does:
 
-      http://www.apache.org/licenses/LICENSE-2.0
+- reads the aggregated CSV from `process_energy.py`
+- converts heap sizes to numeric MB values and frequencies to MHz
+- derives relative heap labels such as `1x`, `2x`, `3x`
+- computes normalized energy/time metrics per benchmark
+- generates per-benchmark line plots for:
+  - package energy
+  - execution time
+  - EDP
+  - EDP2
+- builds summary tables based on confidence-interval overlap with the lowest-mean configuration
+- generates summary heatmaps for normalized package energy and normalized execution time
+- generates a coverage heatmap showing how often tied configurations appear by frequency and heap multiplier
 
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
+Default locations:
+
+- raw measurements: `data/energy.csv`
+- aggregated statistics: `data/energy_stats.csv`
+- detailed plots: `graphs/raw/`
+- summary artifacts: `graphs/summary/`

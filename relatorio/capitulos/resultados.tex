@@ -74,13 +74,19 @@ o tempo de execução e a energia estimada nos domínios DRAM, CPU e pacote do
 processador.
 
 Embora a suíte completa contenha 22 \textit{benchmarks}, neste trabalho foram
-considerados apenas os \textit{benchmarks} que puderam ser construídos e
-executados corretamente no ambiente experimental. Todas as execuções utilizaram
-o perfil de carga \texttt{small}. Essa escolha decorre de uma limitação
-técnica do ambiente experimental: configurações maiores elevavam
-substancialmente o tempo total dos experimentos e, em alguns casos,
-inviabilizavam a execução. Além disso, manter a mesma classe de entrada ao
-longo de todos os experimentos preserva a comparabilidade entre as medições.
+analisados apenas 13. Os demais casos não puderam ser incorporados ao conjunto
+final de resultados porque, no ambiente experimental, o
+\textit{harness} indicou falha de convergência durante a fase de \textit{warmup}
+mesmo após o limite de 40 iterações por tentativa. Ou seja, esses
+\textit{benchmarks} não atingiram um estado estável que
+permitisse coletar medições confiáveis de tempo e energia. Por essa razão,
+foram mantidos apenas os \textit{benchmarks} que puderam ser construídos e que
+apresentaram execuções válidas para análise. Todas as execuções utilizaram o
+perfil de carga \texttt{small}. Essa escolha decorre de uma limitação técnica do
+ambiente experimental: configurações maiores elevavam substancialmente o tempo
+total dos experimentos e, em alguns casos, inviabilizavam a execução. Além
+disso, manter a mesma classe de entrada ao longo de todos os experimentos
+preserva a comparabilidade entre as medições.
 
 As execuções foram automatizadas por dois scripts. O script
 \texttt{run\_energy.sh} realiza uma execução individual do \textit{benchmark}
@@ -116,7 +122,7 @@ dos resultados, esses tamanhos são expressos de forma relativa ao menor
 \(1\times\) denota o valor mínimo e \(2\times\), \(3\times\) e
 assim por diante representam seus múltiplos.
 
-Nas execuções consideradas neste relatório, utilizou-se o coletor de lixo G1 e
+Nas execuções consideradas neste relatório, utilizou-se o coletor de lixo Serial e
 o binário do OpenJDK 21. Para cada combinação de \textit{benchmark}, frequência
 e \textit{heap}, foram realizadas 10 repetições independentes. Em cada
 repetição, o DaCapo executa iterações de aquecimento e uma iteração medida, com

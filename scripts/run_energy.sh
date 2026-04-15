@@ -1,25 +1,5 @@
 #!/usr/bin/env bash
 
-#!/usr/bin/env bash
-
-# Simple wrapper to run DaCapo with EnergyCallback and jRAPL energy measurement.
-# Usage:
-#   ./run_energy.sh -b <benchmark> -r <runs> [-s heap_size] [-F cpu_freq_mhz] [-g gc] [-j java_bin]
-#
-#   -b <benchmark>    : DaCapo benchmark name (e.g., lusearch, batik, eclipse, ...)
-#   -r <runs>         : number of times to repeat the benchmark
-#   -s <heap_size>    : optional JVM heap size (e.g., 512m, 2g). If provided, the JVM
-#                       will run with -Xms[heap_size] -Xmx[heap_size].
-#   -F <cpu_freq_mhz> : optional CPU frequency in MHz (must match one of the
-#                       available discrete frequencies reported by the CPU).
-#   -g <gc>           : optional garbage collector ('serial', 'parallel', 'g1',
-#                       'zgc', or 'shenandoah', depending on JVM support).
-#   -j <java_bin>     : optional path or command name for the Java binary to use
-#                       (e.g., /usr/lib/jvm/java-17/bin/java). Defaults to 'java'.
-#   -o <csv_file>     : optional output CSV filename for energy data. Defaults to 'energy.csv'.
-#   -h                : show this help message and exit.
-
-# Colors for pretty printing
 BLUE="\033[0;34m"
 GREEN="\033[0;32m"
 YELLOW="\033[0;33m"
@@ -30,10 +10,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 BENCHMARKS_DIR="${PROJECT_ROOT}/benchmarks"
 DATA_DIR="${PROJECT_ROOT}/data"
-ENERGY_CSV_PATH=""  # resolved after arg parsing
+ENERGY_CSV_PATH=""
 
 usage() {
-  echo "Usage: $0 -b <benchmark> -r <runs> [-s heap_size] [-F cpu_freq_mhz] [-g gc] [-j java_bin] [-o csv_file]"
+  echo "Usage: $0 -b <benchmark> -r <runs> [-s heap_size] [-F cpu_freq] [-g gc] [-j java_bin] [-a dacapo_jar] [-o csv_file]"
   echo
   echo "  -b <benchmark>    DaCapo benchmark name (e.g., lusearch, batik, eclipse, ...)"
   echo "  -r <runs>         Number of times to repeat the benchmark"
@@ -42,6 +22,7 @@ usage() {
   echo "                    Uses cpupower to set both min and max frequency."
   echo "  -g <gc>           Optional garbage collector: serial, parallel, g1, zgc, shenandoah."
   echo "  -j <java_bin>     Optional Java binary to use (path or command name)."
+  echo "  -a <dacapo_jar>   Optional path to the DaCapo jar (or set DACAPO_JAR)."
   echo "  -o <csv_file>     Optional output CSV filename for energy data (default: energy.csv)."
   echo "  -h                Show this help message and exit."
 }
@@ -52,9 +33,10 @@ HEAP_SIZE=""
 CPU_FREQ=""
 JAVA_BIN_ARG=""
 GC_CHOICE=""
+DACAPO_JAR_ARG=""
 CSV_OUTPUT="energy.csv"
 
-while getopts ":b:r:s:F:g:j:o:h" opt; do
+while getopts ":b:r:s:F:g:j:a:o:h" opt; do
   case "$opt" in
     b) BENCHMARK="$OPTARG" ;;
     r) RUNS="$OPTARG" ;;
@@ -62,6 +44,7 @@ while getopts ":b:r:s:F:g:j:o:h" opt; do
     F) CPU_FREQ="$OPTARG" ;;
     g) GC_CHOICE="$OPTARG" ;;
     j) JAVA_BIN_ARG="$OPTARG" ;;
+    a) DACAPO_JAR_ARG="$OPTARG" ;;
     o) CSV_OUTPUT="$OPTARG" ;;
     h)
       usage
@@ -96,7 +79,65 @@ if ! [[ "$RUNS" =~ ^[0-9]+$ ]]; then
   exit 1
 fi
 
-# Select Java binary (optional, defaults to whatever 'java' on PATH is)
+resolve_absolute_path() {
+  local candidate="$1"
+
+  if [[ "$candidate" = /* ]]; then
+    printf '%s\n' "$candidate"
+    return 0
+  fi
+
+  if [ -f "$candidate" ]; then
+    printf '%s/%s\n' "$(cd "$(dirname "$candidate")" && pwd)" "$(basename "$candidate")"
+    return 0
+  fi
+
+  if [ -f "${BENCHMARKS_DIR}/${candidate}" ]; then
+    printf '%s\n' "${BENCHMARKS_DIR}/${candidate}"
+    return 0
+  fi
+
+  return 1
+}
+
+resolve_dacapo_jar() {
+  local requested_jar="${DACAPO_JAR_ARG:-${DACAPO_JAR:-}}"
+  local resolved_jar=""
+
+  if [ -n "$requested_jar" ]; then
+    if ! resolved_jar="$(resolve_absolute_path "$requested_jar")"; then
+      echo -e "${RED}Error: DaCapo jar '${requested_jar}' not found.${NC}" >&2
+      exit 1
+    fi
+    printf '%s\n' "$resolved_jar"
+    return 0
+  fi
+
+  local candidates=()
+  local jar=""
+
+  shopt -s nullglob
+  for jar in "${BENCHMARKS_DIR}"/dacapo-evaluation-git-*.jar "${BENCHMARKS_DIR}"/dacapo-*.jar "${BENCHMARKS_DIR}"/dacapo.jar; do
+    [ -f "$jar" ] && candidates+=("$jar")
+  done
+  shopt -u nullglob
+
+  if [ "${#candidates[@]}" -eq 0 ]; then
+    echo -e "${RED}Error: no DaCapo jar found under ${BENCHMARKS_DIR}.${NC}" >&2
+    echo -e "${YELLOW}Build one first or pass it explicitly with -a <dacapo_jar> (or DACAPO_JAR).${NC}" >&2
+    exit 1
+  fi
+
+  if [ "${#candidates[@]}" -gt 1 ]; then
+    echo -e "${RED}Error: multiple DaCapo jars found under ${BENCHMARKS_DIR}.${NC}" >&2
+    echo -e "${YELLOW}Please choose one explicitly with -a <dacapo_jar> or DACAPO_JAR.${NC}" >&2
+    printf '  %s\n' "${candidates[@]}" >&2
+    exit 1
+  fi
+
+  printf '%s\n' "${candidates[0]}"
+}
+
 if [ -n "$JAVA_BIN_ARG" ]; then
   JAVA_BIN="$JAVA_BIN_ARG"
 else
@@ -110,7 +151,9 @@ else
   exit 1
 fi
 
-# Configure JVM heap options (optional)
+DACAPO_JAR_PATH="$(resolve_dacapo_jar)"
+echo -e "${BLUE}Using DaCapo jar: ${DACAPO_JAR_PATH}${NC}"
+
 JVM_HEAP_OPTS=""
 HEAP_PROP=""
 if [ -n "$HEAP_SIZE" ]; then
@@ -125,7 +168,6 @@ if [ -n "$HEAP_SIZE" ]; then
   fi
 fi
 
-# Configure garbage collector (optional)
 GC_OPTS=""
 GC_PROP=""
 if [ -n "$GC_CHOICE" ]; then
@@ -156,14 +198,12 @@ if [ -n "$GC_CHOICE" ]; then
   echo -e "${BLUE}Using garbage collector: ${GC_CHOICE}${NC}"
 fi
 
-# State for restoring CPU frequency settings
 OLD_GOVERNOR=""
 OLD_MIN_FREQ=""
 OLD_MAX_FREQ=""
 CPU_FREQ_CONFIGURED="false"
 CPU_FREQ_PROP=""
 
-# State for restoring Intel Turbo Boost
 TURBO_PATH_INTEL="/sys/devices/system/cpu/intel_pstate/no_turbo"
 TURBO_PATH_GENERIC="/sys/devices/system/cpu/cpufreq/boost"
 OLD_TURBO_VALUE=""
@@ -173,7 +213,6 @@ list_available_frequencies() {
   local freq_file="/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies"
 
   if [ -r "$freq_file" ]; then
-    # Print as a sorted, space-separated list for readability
     tr ' ' '\n' < "$freq_file" | sort -n | xargs
     return 0
   fi
@@ -184,7 +223,6 @@ list_available_frequencies() {
 
 configure_cpu_frequency() {
   if [ -z "$CPU_FREQ" ]; then
-    # No explicit frequency requested
     return
   fi
 
@@ -204,7 +242,6 @@ configure_cpu_frequency() {
 
   echo -e "${BLUE}Setting CPU frequency to ${CPU_FREQ} on all supported cores using cpupower...${NC}"
 
-  # Set userspace governor first, then set min and max frequency.
   sudo cpupower frequency-set -g userspace > /dev/null 2>&1
   if [ $? -ne 0 ]; then
      echo -e "${RED}Error: Failed to set CPU governor to userspace.${NC}"
@@ -229,7 +266,6 @@ restore_cpu_frequency() {
 
   echo -e "${BLUE}Restoring previous CPU frequency configuration...${NC}"
 
-  # Restore using cpupower if we have the old values
   if [ -n "$OLD_GOVERNOR" ]; then
       sudo cpupower frequency-set -g $OLD_GOVERNOR > /dev/null 2>&1
   fi
@@ -275,7 +311,6 @@ disable_turboboost() {
     OLD_TURBO_VALUE=$(cat "$path")
   fi
 
-  # Intel semantics: no_turbo=1 disables turbo; generic boost=0 disables turbo.
   local disable_value="1"
   if [ "$path" = "$TURBO_PATH_GENERIC" ]; then
     disable_value="0"
@@ -333,21 +368,16 @@ enable_hyperthreading() {
 }
 
 cleanup() {
-  # Restore CPU frequency configuration (if we changed it),
-  # re-enable hyperthreading, and restore Turbo Boost before exiting.
   restore_cpu_frequency
   enable_hyperthreading
   enable_turboboost
 }
 
-# Ensure we always restore CPU and hyperthreading settings, even if the script is interrupted
 trap cleanup EXIT INT TERM
 
-# Move to the DaCapo benchmarks directory regardless of where this script lives
 mkdir -p "$DATA_DIR"
 cd "$BENCHMARKS_DIR" || exit 1
 
-# Choose a javac matching the selected Java, if possible
 JAVAC_BIN="javac"
 JAVA_DIR="$(dirname "$JAVA_BIN")"
 if [ -x "${JAVA_DIR}/javac" ]; then
@@ -356,36 +386,27 @@ fi
 
 echo -e "${BLUE}Compiling helper classes and harness wrapper with: ${JAVAC_BIN}${NC}"
 
-# Always compile the callback, jRAPL helper, and the Harness wrapper before running.
-# The Harness wrapper ensures we call System.exit(0) when DaCapo finishes, so that
-# benchmarks like H2O that leave non-daemon threads running don't cause the JVM
-# to hang after completion.
-"$JAVAC_BIN" -cp .:dacapo-evaluation-git-52723a30-dirty.jar -d . \
+# The Harness wrapper forces clean JVM termination for workloads like H2O.
+"$JAVAC_BIN" -cp ".:${DACAPO_JAR_PATH}" -d . \
   harness/src/EnergyCallback.java \
   libs/jRAPL-master/EnergyCheckUtils.java \
   "${BENCHMARKS_DIR}/src/Harness.java"
 
-# Disable hyperthreading and Turbo Boost and, if requested, configure CPU frequency
 disable_hyperthreading
 disable_turboboost
 configure_cpu_frequency
 
-# H2O workaround for newer Java versions (which H2O technically doesn't support yet)
+# H2O needs extra opens on newer JDKs.
 EXTRA_JVM_OPTS=""
 if [ "$BENCHMARK" = "h2o" ]; then
-    # Attempt to detect Java version
     raw_ver=$("$JAVA_BIN" -version 2>&1 | head -n 1)
-    # Match "version "X..."
     if [[ "$raw_ver" =~ version\ \"([0-9]+) ]]; then
         ver="${BASH_REMATCH[1]}"
-        # Handle 1.8.x style
         if [ "$ver" -eq 1 ] && [[ "$raw_ver" =~ version\ \"1\.([0-9]+) ]]; then
             ver="${BASH_REMATCH[1]}"
         fi
         
-        # If newer than 17, add the override flag
         if [ "$ver" -gt 17 ]; then
-             # --add-opens is needed because H2O uses reflection that is blocked by default in Java 16+
              EXTRA_JVM_OPTS="-Dsys.ai.h2o.debug.allowJavaVersions=$ver --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED"
              echo -e "${YELLOW}Detected H2O on Java $ver. Adding compatibility flags: $EXTRA_JVM_OPTS${NC}"
         fi
@@ -401,7 +422,7 @@ while [ "$COUNTER" -le "$RUNS" ]; do
     -Djava.library.path=. \
     -Ddacapo.energy.yml=energy.yml \
     "-Ddacapo.energy.csv=${ENERGY_CSV_PATH}" \
-    -cp .:dacapo-evaluation-git-52723a30-dirty.jar \
+    -cp ".:${DACAPO_JAR_PATH}" \
     Harness \
     -callback EnergyCallback \
     -C \
@@ -409,12 +430,10 @@ while [ "$COUNTER" -le "$RUNS" ]; do
     --max-iterations 40 \
     "$BENCHMARK" 2>&1 | tee "$output_log"
   
-  # Check for convergence failure
   if grep -q "Benchmark failed to converge" "$output_log"; then
     echo
     echo "Benchmark failed to converge on run $COUNTER. Retrying..."
     echo
-    # Do not increment COUNTER
   else
     COUNTER=$((COUNTER + 1))
   fi
